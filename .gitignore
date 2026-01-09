@@ -1,0 +1,43 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vs/
+
+# Build results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+
+# Database
+*.mdf
+*.ldf
+App_Data/
+
+# NuGet
+packages/
+*.nupkg
+.nuget/
+
+# VS Code
+.vscode/
+
+# Secrets
+appsettings.Development.json
+appsettings.Production.json
+
+# Rider
+.idea/
+
+# Temp files
+*.tmp
+*.temp
+
+# Logs
+*.log
