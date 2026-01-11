@@ -53,7 +53,7 @@ namespace GameCollection.Application.Services
         {
             // Validate Required Fields
             if (string.IsNullOrWhiteSpace(gameDto.Title))
-                throw new ArgumentException("Title is required!");
+                throw new ArgumentException("Title is required");
 
             if (gameDto.ReleaseYear < 1950 || gameDto.ReleaseYear > DateTime.UtcNow.Year + 2)
                 throw new ArgumentException($"Release year must be between 1950 and {DateTime.UtcNow.Year + 2}");
@@ -66,7 +66,7 @@ namespace GameCollection.Application.Services
             {
                 var platform = await _platformRepository.GetByIdAsync(platformId);
                 if (platform == null)
-                    throw new ArgumentException($"Platform with ID: {platformId}, not found!");
+                    throw new ArgumentException($"Platform with ID {platformId} not found");
 
                 game.GamePlatforms.Add(new GamePlatform { Platform = platform });
             }
@@ -76,7 +76,7 @@ namespace GameCollection.Application.Services
             {
                 var genre = await _genreRepository.GetByIdAsync(genreId);
                 if (genre == null)
-                    throw new ArgumentException($"Genre with ID: {genreId}, not found!");
+                    throw new ArgumentException($"Genre with ID {genreId} not found");
 
                 game.GameGenres.Add(new GameGenre { Genre = genre });
             }
@@ -86,7 +86,7 @@ namespace GameCollection.Application.Services
             {
                 var franchise = await _franchiseRepository.GetByIdAsync(gameDto.FranchiseId.Value);
                 if (franchise == null)
-                    throw new ArgumentException($"Franchise with ID: {gameDto.FranchiseId}, not found!");
+                    throw new ArgumentException($"Franchise with ID {gameDto.FranchiseId} not found");
 
                 game.Franchise = franchise;
             }
