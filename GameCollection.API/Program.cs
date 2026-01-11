@@ -1,11 +1,20 @@
 using GameCollection.Infrastructure;
 using GameCollection.Infrastructure.Data;
+using GameCollection.Infrastructure.Repositories;
+using GameCollection.Domain.Common;
+using GameCollection.Application.Common;
 using Microsoft.EntityFrameworkCore;
+using GameCollection.Domain.Repositories;
+using AutoMapper;
+using GameCollection.Application.DTOs;
+using GameCollection.Domain.Entities;
+using GameCollection.Application.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+
 
 // Add DbContextx with SQL Server
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -14,13 +23,33 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         sqlOptions=> sqlOptions.MigrationsAssembly("GameCollection.Infrastructure")
         ));
 
+// Add AutoMapper
+// 1. Δημιουργία του Configuration
+var config = new MapperConfiguration(cfg => 
+{
+    cfg.AddProfile<MappingProfile>();
+});
+
+// 2. Δημιουργία του Mapper
+var mapper = config.CreateMapper();
+
+// 3. Εγγραφή στο Dependency Injection
+builder.Services.AddSingleton(mapper);
+
+// Register Repositories
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IGameRepository, GameRepository>();
+
+// Register Services
+builder.Services.AddScoped<IGameService, GameService>();
+
 // Add CORS for FrontEnd
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend",
         builder =>
         {
-            builder.WithOrigins("http://localhost:3000")
+            builder.WithOrigins("http://localhost:5113")
                 .AllowAnyHeader()
                 .AllowAnyMethod();
         });
