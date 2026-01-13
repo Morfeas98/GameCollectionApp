@@ -9,6 +9,9 @@ using AutoMapper;
 using GameCollection.Application.DTOs;
 using GameCollection.Domain.Entities;
 using GameCollection.Application.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,24 +27,13 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         ));
 
 // Add AutoMapper
-// 1. Δημιουργία του Configuration
 var config = new MapperConfiguration(cfg => 
 {
     cfg.AddProfile<MappingProfile>();
 });
-
-// 2. Δημιουργία του Mapper
 var mapper = config.CreateMapper();
-
-// 3. Εγγραφή στο Dependency Injection
 builder.Services.AddSingleton(mapper);
 
-// Register Repositories
-builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
-builder.Services.AddScoped<IGameRepository, GameRepository>();
-
-// Register Services
-builder.Services.AddScoped<IGameService, GameService>();
 
 // Add CORS for FrontEnd
 builder.Services.AddCors(options =>
@@ -62,7 +54,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 
-// Configure Swagger
+// Add & Configure Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -86,6 +78,54 @@ builder.Services.AddSwaggerGen(c =>
         c.IncludeXmlComments(xmlPath);
     }
 });
+
+// Add Authentication with JWT Bearer
+var jwtKey = builder.Configuration["Jwt:Key"] ??
+    throw new InvalidOperationException("JWT Key not configured");
+var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+var jwtAudience = builder.Configuration["Jwt:Audience"];
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters()
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtIssuer,
+        ValidAudience = jwtAudience,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+        ClockSkew = TimeSpan.Zero
+    };
+});
+
+// Add Authorization Policy
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminOnly", policy =>
+        policy.RequireRole("Admin"));
+
+    options.AddPolicy("UserOnly", policy =>
+        policy.RequireRole("User", "Admin"));
+});
+
+
+
+// Register Repositories
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<IGameRepository, GameRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+
+// Register Services
+builder.Services.AddScoped<IGameService, GameService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 
 
 var app = builder.Build();
@@ -121,6 +161,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

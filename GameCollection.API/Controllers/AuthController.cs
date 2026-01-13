@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using GameCollection.Application.DTOs;
 using GameCollection.Application.Services;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace GameCollection.API.Controllers
 {
@@ -53,14 +55,17 @@ namespace GameCollection.API.Controllers
             }
         }
 
-
+        [Authorize]
         [HttpPost("profile")]
         public async Task<ActionResult<UserProfileDto>> GetProfile()
         {
             try
             {
-                var userId = 1; // Placeholder - should come from authorized user's claims
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim))
+                    return Unauthorized(new { error = "User not authenticated"});
 
+                var userId = int.Parse(userIdClaim);
                 var profile = await _userService.GetUserProfileAsync(userId);
                 return Ok(profile);
             }
@@ -68,6 +73,13 @@ namespace GameCollection.API.Controllers
             {
                 return NotFound(new { error = ex.Message });
             }
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            return Ok(new { message = "Logged out successfully" });
         }
     }
 }

@@ -1,15 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using GameCollection.Infrastructure.Data;
 using GameCollection.Domain.Common;
 using GameCollection.Domain.Entities;
 using GameCollection.Application.DTOs;
 using GameCollection.Application.Services;
+using System.Security.Claims;
+
 
 namespace GameCollection.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class GamesController : ControllerBase
     {
         private readonly IGameService _gameService;
@@ -40,6 +44,7 @@ namespace GameCollection.API.Controllers
         }
 
         // POST: api/games
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<GameDto>> CreateGame(CreateGameDto gameDto)
         {
@@ -59,6 +64,7 @@ namespace GameCollection.API.Controllers
         }
 
         // PUT: api/games/5
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<ActionResult<GameDto>> UpdateGame(int id, UpdateGameDto gameDto)
         {
@@ -78,6 +84,7 @@ namespace GameCollection.API.Controllers
         }
 
         // DELETE: api/games/5
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteGame(int id)
         {
@@ -106,6 +113,46 @@ namespace GameCollection.API.Controllers
         {
             var recommendations = await _gameService.GetRecommendationsAsync(id);
             return Ok(recommendations);
+        }
+
+        [AllowAnonymous]
+        [HttpGet("public")]
+        public async Task<ActionResult<IEnumerable<GameDto>>> GetPublicGames()
+        {
+            var games = await _gameService.GetAllGamesAsync();
+            return Ok(games.Take(5));
+        }
+
+        [HttpPost("admin-only")]
+        [Authorize(Roles = "Admin")]
+        public IActionResult AdminOnlyEndpoint()
+        {
+            return Ok(new { message = "Welcome Admin!" });
+        }
+
+        // Get current User
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userIdClaim))
+                throw new UnauthorizedAccessException("User not authenticated");
+
+            return int.Parse(userIdClaim);
+        }
+
+        [HttpGet("my-recommendations")]
+        public async Task<ActionResult<IEnumerable<GameDto>>> GetMyRecommendations()
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var allGames = await _gameService.GetAllGamesAsync();
+                return Ok(allGames.Take(3));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new { error = ex.Message });
+            }
         }
     }
 }

@@ -96,6 +96,31 @@ namespace GameCollection.Infrastructure.Data
 
             context.GamePlatforms.AddRange(gamePlatforms);
             context.SaveChanges();
+
+            // Add Users
+            if (!context.Users.Any())
+            {
+                var users = new[]
+                {
+                    new User
+                    {
+                        Username = "admin",
+                        Email = "admin@gamecollection.com",
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123!"),
+                        Role = "Admin"
+                    },
+                    new User
+                    {
+                        Username = "testuser",
+                        Email = "user@gamecollection.com",
+                        PasswordHash = BCrypt.Net.BCrypt.HashPassword("User123!"),
+                        Role = "User"
+                    }
+                };
+
+                context.Users.AddRange(users);
+                context.SaveChanges();
+            }
         }
     }
 }

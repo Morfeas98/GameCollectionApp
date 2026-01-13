@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using GameCollection.Application.DTOs;
+using GameCollection.Application.Services;
 using GameCollection.Domain.Entities;
 
 namespace GameCollection.Application.Common
@@ -28,6 +29,10 @@ namespace GameCollection.Application.Common
 
             CreateMap<Platform, string>().ConvertUsing(p => p.Name);
             CreateMap<Genre, string>().ConvertUsing(g => g.Name);
+
+            CreateMap<User, UserProfileDto>()
+                .ForMember(dest => dest.CollectionCount,
+                    opt => opt.MapFrom(src => src.Collections.Count));
         }
     }
 }
