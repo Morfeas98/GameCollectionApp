@@ -12,8 +12,11 @@ namespace GameCollection.Domain.Repositories
     {
         Task<IEnumerable<GameCollection.Domain.Entities.GameCollection>> GetUserCollectionsAsync(int userId);
         Task<GameCollection.Domain.Entities.GameCollection> GetCollectionWithGamesAsync(int collectionId);
+        Task<bool> CollectionBelongsToUserAsyn(int collectionId, int userID);
         Task AddGameToCollectionAsync(int collectionId, int gameId, int? personalRating, string? personalNotes);
         Task RemoveGameFromCollectionAsync(int collectionId, int gameId);
         Task<IEnumerable<Game>> GetCollectionGamesAsync(int collectionId);
+        Task<CollectionGame> GetCollectionGameAsync(int collectionId, int gameId);
+        Task UpdateCollectionGameAsync(CollectionGame collectionGame);
     }
 }
