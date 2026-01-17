@@ -16,7 +16,7 @@ namespace GameCollection.Infrastructure.Repositories
         {
         }
 
-        public async Task<IEnumerable<GameCollection.Domain.Entities.GameCollection>> GetUserCollectionAsync(int userId)
+        public async Task<IEnumerable<GameCollection.Domain.Entities.GameCollection>> GetUserCollectionsAsync(int userId)
         {
             return await _context.GameCollections
                 .Include(c => c.CollectionGames)

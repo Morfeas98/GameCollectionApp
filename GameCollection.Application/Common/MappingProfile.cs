@@ -33,6 +33,14 @@ namespace GameCollection.Application.Common
             CreateMap<User, UserProfileDto>()
                 .ForMember(dest => dest.CollectionCount,
                     opt => opt.MapFrom(src => src.Collections.Count));
+
+            CreateMap<GameCollection.Domain.Entities.GameCollection, CollectionDto>()
+                .ForMember(dest => dest.GameCount,
+                    opt => opt.MapFrom(src => src.CollectionGames.Count(cg => !cg.IsDeleted)));
+
+            CreateMap<CollectionGame, CollectionGameDto>()
+                .ForMember(dest => dest.GameTitle,
+                    opt => opt.MapFrom(src => src.Game.Title));
         }
     }
 }
