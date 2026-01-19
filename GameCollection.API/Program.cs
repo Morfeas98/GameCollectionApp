@@ -79,31 +79,31 @@ builder.Services.AddSwaggerGen(c =>
     }
 });
 
-// Add Authentication with JWT Bearer
-var jwtKey = builder.Configuration["Jwt:Key"] ??
-    throw new InvalidOperationException("JWT Key not configured");
-var jwtIssuer = builder.Configuration["Jwt:Issuer"];
-var jwtAudience = builder.Configuration["Jwt:Audience"];
+//// Add Authentication with JWT Bearer
+//var jwtKey = builder.Configuration["Jwt:Key"] ??
+//    throw new InvalidOperationException("JWT Key not configured");
+//var jwtIssuer = builder.Configuration["Jwt:Issuer"];
+//var jwtAudience = builder.Configuration["Jwt:Audience"];
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters()
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = jwtIssuer,
-        ValidAudience = jwtAudience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
-        ClockSkew = TimeSpan.Zero
-    };
-});
+//builder.Services.AddAuthentication(options =>
+//{
+//    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+//    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+//})
+//.AddJwtBearer(options =>
+//{
+//    options.TokenValidationParameters = new TokenValidationParameters()
+//    {
+//        ValidateIssuer = true,
+//        ValidateAudience = true,
+//        ValidateLifetime = true,
+//        ValidateIssuerSigningKey = true,
+//        ValidIssuer = jwtIssuer,
+//        ValidAudience = jwtAudience,
+//        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+//        ClockSkew = TimeSpan.Zero
+//    };
+//});
 
 // Add Authorization Policy
 builder.Services.AddAuthorization(options =>
@@ -115,7 +115,33 @@ builder.Services.AddAuthorization(options =>
         policy.RequireRole("User", "Admin"));
 });
 
+// Add Razor Pages
+builder.Services.AddRazorPages();
 
+// Add Authentication Session
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// Add Authentication
+builder.Services.AddAuthentication("Cookies")
+    .AddCookie("Cookies", options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Account/AccessDenied";
+        options.ExpireTimeSpan = TimeSpan.FromDays(7);
+    });
+
+// Add Authorization
+builder.Services.AddAuthorization();
+
+// Add HttpContextAccessor for User Access
+builder.Services.AddHttpContextAccessor();
 
 // Register Repositories
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
@@ -163,8 +189,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
+app.UseStaticFiles();
+app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseSession();
+app.MapRazorPages();
 app.MapControllers();
 
 app.Run();
