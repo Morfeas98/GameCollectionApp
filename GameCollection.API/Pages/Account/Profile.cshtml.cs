@@ -1,8 +1,9 @@
+using GameCollection.Application.DTOs;
+using GameCollection.Application.Services;
+using GameCollection.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using GameCollection.Application.DTOs;
-using GameCollection.Application.Services;
 using System.Security.Claims;
 
 namespace GameCollection.API.Pages.Account
@@ -11,32 +12,52 @@ namespace GameCollection.API.Pages.Account
     public class ProfileModel : PageModel
     {
         private readonly IUserService _userService;
-        private readonly ICollectionService _collectionService;
+        private readonly ICurrentUserService _currentUser;
 
-        public UserProfileDto Profile { get; set; }
-        public IEnumerable<CollectionDto> Collections { get; set; }
+        public UserProfileDto UserProfile { get; set; }
+        public int TotalCollections { get; set; }
+        public int TotalGamesInCollections { get; set; }
 
-        public ProfileModel(IUserService userService, ICollectionService collectionService)
+        public ProfileModel(IUserService userService, ICurrentUserService currentUser)
         {
             _userService = userService;
-            _collectionService = collectionService;
+            _currentUser = currentUser;
         }
+
+        public UserStatsDto UserStats { get; set; }
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value);
+            if (!_currentUser.IsAuthenticated)
+            {
+                TempData["ErrorMessage"] = "Please login to view your profile.";
+                return RedirectToPage("/Account/Login", new { returnUrl = "/Account/Profile" });
+            }
 
             try
             {
-                Profile = await _userService.GetUserProfileAsync(userId);
-                Collections = await _collectionService.GetUserCollectionsAsync(userId);
+                var userId = _currentUser.GetRequiredUserId();
+                UserProfile = await _userService.GetUserProfileAsync(userId);
+
+                var stats = await _userService.GetUserStatsAsync(userId);
+                TotalCollections = stats.TotalCollections;
+                TotalGamesInCollections = stats.TotalGamesInCollections;
+
+                UserStats = stats;
 
                 return Page();
             }
             catch (KeyNotFoundException)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "User profile not found.";
+                return RedirectToPage("/Index");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"An error occurred: {ex.Message}";
+                return RedirectToPage("/Index");
             }
         }
+
     }
 }

@@ -4,49 +4,140 @@
 
 @{
     ViewData["Title"] = "Login";
+    Layout = "_AuthLayout"; // Θα δημιουργήσουμε ειδικό layout για authentication pages
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="mb-0">Login to Your Account</h4>
-            </div>
-            <div class="card-body">
-                <form method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-
-                    <div class="mb-3">
-                        <label asp-for="Input.UsernameOrEmail" class="form-label"></label>
-                        <input asp-for="Input.UsernameOrEmail" class="form-control" autocomplete="username" />
-                        <span asp-validation-for="Input.UsernameOrEmail" class="text-danger"></span>
+<div class="auth-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card shadow">
+                    <div class="card-header bg-primary text-white text-center py-3">
+                        <h4 class="mb-0">
+                            <i class="bi bi-controller me-2"></i>
+                            Welcome Back
+                        </h4>
+                        <small class="opacity-75">Sign in to your Game Collection account</small>
                     </div>
+                    <div class="card-body p-4">
+                        <form method="post">
+                            <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-                    <div class="mb-3">
-                        <label asp-for="Input.Password" class="form-label"></label>
-                        <input asp-for="Input.Password" class="form-control" autocomplete="current-password" />
-                        <span asp-validation-for="Input.Password" class="text-danger"></span>
-                    </div>
+                            @if (!string.IsNullOrEmpty(Model.ReturnUrl))
+                            {
+                                <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
+                            }
 
-                    <div class="mb-3 form-check">
-                        <input asp-for="Input.RememberMe" class="form-check-input" />
-                        <label asp-for="Input.RememberMe" class="form-check-label"></label>
-                    </div>
+                            <!-- Username/Email -->
+                            <div class="mb-3">
+                                <label asp-for="LoginDto.UsernameOrEmail" class="form-label"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-person"></i>
+                                    </span>
+                                    <input asp-for="LoginDto.UsernameOrEmail"
+                                           class="form-control"
+                                           placeholder="Username or email" />
+                                </div>
+                                <span asp-validation-for="LoginDto.UsernameOrEmail" class="text-danger small"></span>
+                            </div>
 
-                    <div class="mb-3">
-                        <button type="submit" class="btn btn-primary w-100">Login</button>
-                    </div>
+                            <!-- Password -->
+                            <div class="mb-3">
+                                <label asp-for="LoginDto.Password" class="form-label"></label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="bi bi-lock"></i>
+                                    </span>
+                                    <input asp-for="LoginDto.Password"
+                                           type="password"
+                                           class="form-control"
+                                           placeholder="Password" />
+                                </div>
+                                <span asp-validation-for="LoginDto.Password" class="text-danger small"></span>
+                            </div>
 
-                    <div class="text-center">
-                        <p>
-                            Don't have an account? <a href="/Account/Register">Register here</a>
-                        </p>
+                            <!-- Remember Me -->
+                            <div class="mb-3 form-check">
+                                <input asp-for="RememberMe" class="form-check-input" />
+                                <label asp-for="RememberMe" class="form-check-label">
+                                    Remember me
+                                </label>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="d-grid mb-3">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                                    Sign In
+                                </button>
+                            </div>
+
+                            <!-- Forgot Password -->
+                            <div class="text-center mb-3">
+                                <a href="#" class="text-decoration-none small">
+                                    Forgot your password?
+                                </a>
+                            </div>
+
+                            <!-- Divider -->
+                            <div class="position-relative my-4">
+                                <hr />
+                                <div class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">
+                                    OR
+                                </div>
+                            </div>
+
+                            <!-- Register Link -->
+                            <div class="text-center">
+                                <p class="mb-0">Don't have an account?</p>
+                                <a asp-page="/Account/Register" asp-route-returnUrl="@Model.ReturnUrl"
+                                   class="btn btn-outline-primary mt-2">
+                                    <i class="bi bi-person-plus me-2"></i>
+                                    Create New Account
+                                </a>
+                            </div>
+                        </form>
                     </div>
-                </form>
+                </div>
+
+                <!-- Demo Credentials -->
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h6 class="card-title small">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Demo Credentials
+                        </h6>
+                        <div class="small text-muted">
+                            <div>Username: <code>demo</code></div>
+                            <div>Password: <code>Password123!</code></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+@section Styles {
+    <style>
+        .auth-page {
+            min-height: 80vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .card {
+            border-radius: 10px;
+            border: none;
+        }
+
+        .card-header {
+            border-radius: 10px 10px 0 0 !important;
+            border: none;
+        }
+    </style>
+}
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

@@ -1,0 +1,158 @@
+﻿@* Pages/Error/Error.cshtml *@
+@page "/error"
+@model GameCollection.API.Pages.Error.ErrorModel
+
+@{
+    ViewData["Title"] = "Error";
+    Layout = "_Layout";
+    var status = Model.StatusCode;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow">
+                <div class="card-body p-5 text-center">
+                    <!-- Error Icon -->
+                    <div class="mb-4">
+                        <i class="bi bi-exclamation-triangle-fill display-1
+                           @(status >= 500 ? "text-danger" :
+                             status == 404 ? "text-warning" : "text-primary")"></i>
+                    </div>
+
+                    <!-- Error Title -->
+                    <h1 class="display-5 fw-bold mb-3">
+                        @if (status == 404)
+                        {
+                            <span>Page Not Found</span>
+                        }
+                        else if (status == 403)
+                        {
+                            <span>Access Denied</span>
+                        }
+                        else if (status == 401)
+                        {
+                            <span>Unauthorized</span>
+                        }
+                        else if (status >= 500)
+                        {
+                            <span>Server Error</span>
+                        }
+                        else
+                        {
+                            <span>Oops! Something went wrong</span>
+                        }
+                    </h1>
+
+                    <!-- Error Code -->
+                    <div class="mb-4">
+                        <span class="badge bg-secondary fs-6">Error @status</span>
+                        @if (Model.ShowRequestId)
+                        {
+                            <span class="badge bg-light text-dark fs-6 ms-2">Request ID: @Model.RequestId</span>
+                        }
+                    </div>
+
+                    <!-- Error Message -->
+                    <p class="lead mb-4">
+                        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                        {
+                            @Model.ErrorMessage
+                        }
+                        else if (status == 404)
+                        {
+                            <span>The page you're looking for doesn't exist or has been moved.</span>
+                        }
+                        else if (status == 403)
+                        {
+                            <span>You don't have permission to access this resource.</span>
+                        }
+                        else if (status == 401)
+                        {
+                            <span>Please log in to access this page.</span>
+                        }
+                        else
+                        {
+                            <span>An unexpected error occurred while processing your request.</span>
+                        }
+                    </p>
+
+                    @if (!string.IsNullOrEmpty(Model.OriginalPath) && Model.OriginalPath != "/error")
+                    {
+                        <div class="alert alert-info mb-4">
+                            <small>
+                                <i class="bi bi-info-circle me-1"></i>
+                                Attempted to access: <code>@Model.OriginalPath</code>
+                            </small>
+                        </div>
+                    }
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex flex-column flex-md-row justify-content-center gap-3">
+                        <a href="/" class="btn btn-primary btn-lg px-4">
+                            <i class="bi bi-house me-2"></i>Go to Homepage
+                        </a>
+
+                        <a href="/Games" class="btn btn-outline-primary btn-lg px-4">
+                            <i class="bi bi-controller me-2"></i>Browse Games
+                        </a>
+
+                        @if (status == 401 || status == 403)
+                        {
+                            <a href="/Account/Login" class="btn btn-success btn-lg px-4">
+                                <i class="bi bi-box-arrow-in-right me-2"></i>Login
+                            </a>
+                        }
+
+                        <button onclick="window.history.back()" class="btn btn-outline-secondary btn-lg px-4">
+                            <i class="bi bi-arrow-left me-2"></i>Go Back
+                        </button>
+                    </div>
+
+                    <!-- Technical Info (Development Only) -->
+                    @if (Model.ShowRequestId && status >= 500)
+                    {
+                        <div class="mt-5 pt-4 border-top">
+                            <h6 class="mb-3">Technical Information</h6>
+                            <div class="bg-dark text-light p-3 rounded small font-monospace">
+                                <div>Request ID: <code>@Model.RequestId</code></div>
+                                <div>Status Code: <code>@status</code></div>
+                                <div>Timestamp: <code>@DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")</code></div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Support Information -->
+            <div class="text-center mt-4">
+                <p class="text-muted small">
+                    If the problem persists, please contact support.
+                    <a href="mailto:support@gamecollection.com" class="text-decoration-none">support@gamecollection.com</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .error-icon {
+            animation: bounce 2s infinite;
+        }
+
+        @@keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+
+            40% {
+                transform: translateY(-30px);
+            }
+
+            60% {
+                transform: translateY(-15px);
+            }
+        }
+    </style>
+}

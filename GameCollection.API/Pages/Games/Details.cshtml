@@ -1,4 +1,458 @@
-﻿@page
+﻿@* Pages/Games/Details.cshtml *@
+@page "{id:int}"
 @model GameCollection.API.Pages.Games.DetailsModel
+
 @{
+    ViewData["Title"] = Model.Game?.Title;
+}
+
+@if (Model.Game != null)
+{
+    <div class="container">
+        <!-- Game Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/Games">Games</a></li>
+                        <li class="breadcrumb-item active">@Model.Game.Title</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column: Game Info -->
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h1 class="card-title mb-1">@Model.Game.Title</h1>
+                                <p class="text-muted mb-0">
+                                    @Model.Game.ReleaseYear | 
+                                    @if (!string.IsNullOrEmpty(Model.Game.Developer))
+                                    {
+                                        <span>@Model.Game.Developer</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(Model.Game.Publisher))
+                                    {
+                                        <span> | @Model.Game.Publisher</span>
+                                    }
+                                </p>
+                            </div>
+                            
+                            @if (Model.Game.MetacriticScore.HasValue)
+                            {
+                                var scoreClass = Model.Game.MetacriticScore >= 75 ? "metacritic-high" :
+                                                     Model.Game.MetacriticScore >= 50 ? "metacritic-medium" :
+                                                     "metacritic-low";
+                  
+                                <div class="text-center">
+                                    <div class="metacritic-badge @scoreClass" style="font-size: 1.2em; padding: 8px 15px;">
+                                        @Model.Game.MetacriticScore
+                                    </div>
+                                    <small class="text-muted">Metacritic</small>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2 mb-4">
+                            @if (Model.IsInUserCollection)
+                            {
+                                <form method="post" asp-page-handler="RemoveFromCollection">
+                                    <input type="hidden" name="gameId" value="@Model.Game.Id" />
+                                    <button type="submit" class="btn btn-outline-danger">
+                                        <i class="bi bi-trash"></i> Remove from Collection
+                                    </button>
+                                </form>
+                                <a href="#" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#editNotesModal">
+                                    <i class="bi bi-pencil"></i> Edit Notes
+                                </a>
+                            }
+                            else
+                            {
+                                <form method="post" asp-page-handler="AddToCollection">
+                                    <input type="hidden" name="gameId" value="@Model.Game.Id" />
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-plus-circle"></i> Add to Collection
+                                    </button>
+                                </form>
+                            }
+                            
+                            <a href="/Games/Edit/@Model.Game.Id" class="btn btn-outline-secondary">
+                                <i class="bi bi-pencil-square"></i> Edit Game
+                            </a>
+                        </div>
+
+                        <!-- Description -->
+                        @if (!string.IsNullOrEmpty(Model.Game.Description))
+                        {
+                            <div class="mb-4">
+                                <h5>Description</h5>
+                                <p>@Model.Game.Description</p>
+                            </div>
+                        }
+
+                        <!-- Game Details -->
+                        <div class="row mb-4">
+                            @if (Model.Game.Platforms.Any())
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <h6>Platforms</h6>
+                                    <div>
+                                        @foreach (var platform in Model.Game.Platforms)
+                                        {
+                                            <span class="badge bg-primary me-1 mb-1">@platform</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            
+                            @if (Model.Game.Genres.Any())
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <h6>Genres</h6>
+                                    <div>
+                                        @foreach (var genre in Model.Game.Genres)
+                                        {
+                                            <span class="badge bg-secondary me-1 mb-1">@genre</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                            
+                            @if (!string.IsNullOrEmpty(Model.Game.FranchiseName))
+                            {
+                                <div class="col-12">
+                                    <h6>Franchise</h6>
+                                    <span class="badge bg-info">@Model.Game.FranchiseName</span>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- User Notes (if in collection) -->
+                        @if (Model.IsInUserCollection)
+                        {
+                            <div class="border-top pt-3 mt-3">
+                                <h5>Your Notes</h5>
+                                @if (Model.PersonalRating.HasValue)
+                                {
+                                    <div class="mb-2">
+                                        <strong>Your Rating:</strong>
+                                        <div class="text-warning">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="bi @(i <= Model.PersonalRating ? "bi-star-fill" : "bi-star")"></i>
+                                            }
+                                            <span class="ms-2">(@Model.PersonalRating/10)</span>
+                                        </div>
+                                    </div>
+                                }
+                                
+                                @if (!string.IsNullOrEmpty(Model.PersonalNotes))
+                                {
+                                    <div class="mb-2">
+                                        <strong>Your Notes:</strong>
+                                        <p class="mb-0">@Model.PersonalNotes</p>
+                                    </div>
+                                }
+                                
+                                <div class="d-flex gap-2">
+                                    @if (Model.Completed)
+                                    {
+                                        <span class="badge bg-success">
+                                            <i class="bi bi-check-circle"></i> Completed
+                                        </span>
+                                    }
+                                    
+                                    @if (Model.CurrentlyPlaying)
+                                    {
+                                        <span class="badge bg-info">
+                                            <i class="bi bi-controller"></i> Currently Playing
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Recommendations -->
+                @if (Model.Recommendations.Any())
+                {
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Recommended Games</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                @foreach (var recommendation in Model.Recommendations.Take(3))
+                                {
+                                    <div class="col-md-4 mb-3">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h6 class="card-title">@recommendation.Title</h6>
+                                                <p class="card-text small text-muted">
+                                                    @recommendation.ReleaseYear | 
+                                                    @if (recommendation.MetacriticScore.HasValue)
+                                                    {
+                                                        <span class="badge bg-secondary">@recommendation.MetacriticScore</span>
+                                                    }
+                                                </p>
+                                                <a href="/Games/Details/@recommendation.Id" class="stretched-link"></a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                            @if (Model.Recommendations.Count() > 3)
+                            {
+                                <div class="text-center mt-3">
+                                    <a href="#" class="btn btn-sm btn-outline-primary">
+                                        View All Recommendations
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Right Column: Additional Actions & Info -->
+            <div class="col-lg-4">
+                <!-- Quick Add to Collection -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">Add to Collection</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" asp-page-handler="QuickAdd">
+                            <input type="hidden" name="gameId" value="@Model.Game.Id" />
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Select Collection</label>
+                                <select class="form-select" name="collectionId" required>
+                                    <option value="">Choose a collection...</option>
+                                    <!-- TODO: Populate with user's collections -->
+                                    <option value="1">My Favorites</option>
+                                    <option value="2">Currently Playing</option>
+                                    <option value="3">Completed Games</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Your Rating (1-10)</label>
+                                <input type="range" 
+                                       class="form-range" 
+                                       name="personalRating" 
+                                       min="1" 
+                                       max="10" 
+                                       value="5">
+                                <div class="d-flex justify-content-between">
+                                    <small>1</small>
+                                    <small>5</small>
+                                    <small>10</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Notes</label>
+                                <textarea class="form-control" 
+                                          name="personalNotes" 
+                                          rows="3"
+                                          placeholder="Add your thoughts about this game..."></textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="completed" 
+                                           id="completedCheck">
+                                    <label class="form-check-label" for="completedCheck">
+                                        Completed
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" 
+                                           type="checkbox" 
+                                           name="currentlyPlaying" 
+                                           id="playingCheck">
+                                    <label class="form-check-label" for="playingCheck">
+                                        Currently Playing
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle"></i> Add to Collection
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Game Stats -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0">Game Information</h6>
+                    </div>
+                    <div class="card-body">
+                        <dl class="row mb-0">
+                            <dt class="col-6">Release Year</dt>
+                            <dd class="col-6">@Model.Game.ReleaseYear</dd>
+                            
+                            @if (!string.IsNullOrEmpty(Model.Game.Developer))
+                            {
+                                <dt class="col-6">Developer</dt>
+                                <dd class="col-6">@Model.Game.Developer</dd>
+                            }
+                            
+                            @if (!string.IsNullOrEmpty(Model.Game.Publisher))
+                            {
+                                <dt class="col-6">Publisher</dt>
+                                <dd class="col-6">@Model.Game.Publisher</dd>
+                            }
+                            
+                            @if (Model.Game.MetacriticScore.HasValue)
+                            {
+                                <dt class="col-6">Metacritic Score</dt>
+                                <dd class="col-6">
+                                    <span class="badge @(Model.Game.MetacriticScore >= 75 ? "bg-success" : 
+                                                      Model.Game.MetacriticScore >= 50 ? "bg-warning" : "bg-danger")">
+                                        @Model.Game.MetacriticScore
+                                    </span>
+                                </dd>
+                            }
+                        </dl>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0">Quick Actions</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <a href="/Games/Edit/@Model.Game.Id" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil-square"></i> Edit Game Details
+                            </a>
+                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="bi bi-trash"></i> Delete Game
+                            </button>
+                            @if (!string.IsNullOrEmpty(Model.Game.MetacriticUrl))
+                            {
+                                <a href="@Model.Game.MetacriticUrl" target="_blank" class="btn btn-outline-secondary">
+                                    <i class="bi bi-box-arrow-up-right"></i> View on Metacritic
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Game</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete <strong>@Model.Game.Title</strong>?</p>
+                    <p class="text-danger">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <form method="post" asp-page-handler="Delete">
+                        <input type="hidden" name="id" value="@Model.Game.Id" />
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Delete Game</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Notes Modal -->
+    <div class="modal fade" id="editNotesModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Your Notes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="post" asp-page-handler="UpdateNotes">
+                    <input type="hidden" name="gameId" value="@Model.Game.Id" />
+                    <input type="hidden" name="collectionGameId" value="@Model.CollectionGameId" />
+                    
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Rating (1-10)</label>
+                            <input type="range" 
+                                   class="form-range" 
+                                   name="personalRating" 
+                                   min="1" 
+                                   max="10" 
+                                   value="@(Model.PersonalRating ?? 5)">
+                            <div class="d-flex justify-content-between">
+                                <small>1</small>
+                                <small>5</small>
+                                <small>10</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" 
+                                      name="personalNotes" 
+                                      rows="4">@Model.PersonalNotes</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       name="completed" 
+                                       id="modalCompleted" 
+                                       @(Model.Completed ? "checked" : "")>
+                                <label class="form-check-label" for="modalCompleted">
+                                    Completed
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       name="currentlyPlaying" 
+                                       id="modalPlaying" 
+                                       @(Model.CurrentlyPlaying ? "checked" : "")>
+                                <label class="form-check-label" for="modalPlaying">
+                                    Currently Playing
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="container text-center py-5">
+        <i class="bi bi-exclamation-triangle display-1 text-warning mb-3"></i>
+        <h2>Game Not Found</h2>
+        <p class="lead">The game you're looking for doesn't exist or has been removed.</p>
+        <a href="/Games" class="btn btn-primary">Browse All Games</a>
+    </div>
 }

@@ -1,0 +1,84 @@
+﻿@* Pages/Error/404.cshtml *@
+@page "/404"
+@model GameCollection.API.Pages.Error.ErrorModel
+
+@{
+    ViewData["Title"] = "Page Not Found";
+    Layout = "_Layout";
+    Model.StatusCode = 404;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 text-center">
+            <!-- 404 Illustration -->
+            <div class="mb-4">
+                <div class="error-icon">
+                    <i class="bi bi-binoculars display-1 text-warning"></i>
+                </div>
+            </div>
+
+            <h1 class="display-4 fw-bold mb-3">404</h1>
+            <h2 class="h3 mb-4">Page Not Found</h2>
+
+            <p class="lead mb-4">
+                Looks like you've ventured into uncharted territory.
+                The page you're looking for doesn't exist or has been moved.
+            </p>
+
+            <!-- Search Bar -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">Search for Games</h5>
+                    <form method="get" action="/Games">
+                        <div class="input-group">
+                            <input type="text" class="form-control" name="search" placeholder="Search games...">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="bi bi-search"></i> Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <a href="/" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-house"></i> Home
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="/Games" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-controller"></i> Games
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="/Collections" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-collection"></i> Collections
+                    </a>
+                </div>
+            </div>
+
+            <!-- Popular Games Suggestion -->
+            <div class="card mt-5">
+                <div class="card-header">
+                    <h6 class="mb-0">Popular Games You Might Like</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <a href="/Games" class="btn btn-sm btn-outline-secondary w-100">Action</a>
+                        </div>
+                        <div class="col-4">
+                            <a href="/Games" class="btn btn-sm btn-outline-secondary w-100">RPG</a>
+                        </div>
+                        <div class="col-4">
+                            <a href="/Games" class="btn btn-sm btn-outline-secondary w-100">Adventure</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

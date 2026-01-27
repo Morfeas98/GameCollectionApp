@@ -1,4 +1,410 @@
-﻿@page
+﻿@* Pages/Collections/Details.cshtml *@
+@page "{id:int}"
 @model GameCollection.API.Pages.Collections.DetailsModel
+
 @{
+    ViewData["Title"] = Model.Collection?.Name ?? "Collection Details";
+}
+
+@if (Model.Collection != null)
+{
+    <div class="container">
+        <!-- Breadcrumb -->
+        <div class="row mb-3">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/Collections">Collections</a></li>
+                        <li class="breadcrumb-item active">@Model.Collection.Name</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Collection Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h1 class="mb-1">@Model.Collection.Name</h1>
+                        @if (!string.IsNullOrEmpty(Model.Collection.Description))
+                        {
+                            <p class="text-muted mb-2">@Model.Collection.Description</p>
+                        }
+                        <div class="d-flex align-items-center text-muted">
+                            <small>
+                                <i class="bi bi-collection me-1"></i>
+                                @Model.Collection.GameCount games
+                                <span class="mx-2">•</span>
+                                <i class="bi bi-calendar me-1"></i>
+                                Created @Model.Collection.CreatedAt.ToString("dd MMM yyyy")
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        @if (Model.IsOwner)
+                        {
+                            <a href="/Collections/Edit/@Model.Collection.Id" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil"></i> Edit
+                            </a>
+                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                <i class="bi bi-trash"></i> Delete
+                            </button>
+                        }
+                        <a href="/Collections" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Back
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Game Form -->
+        @if (Model.IsOwner && Model.AllGames.Any())
+        {
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Add Games to Collection</h5>
+                        </div>
+                        <div class="card-body">
+                            <form method="post" asp-page-handler="AddGame">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Select Game</label>
+                                        <select asp-for="AddGameDto.GameId"
+                                                asp-items="Model.AllGames"
+                                                class="form-select" required>
+                                        </select>
+                                        <span asp-validation-for="AddGameDto.GameId" class="text-danger small"></span>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Your Rating (1-10)</label>
+                                        <input asp-for="AddGameDto.PersonalRating"
+                                               class="form-control"
+                                               type="number"
+                                               min="1"
+                                               max="10"
+                                               placeholder="Optional">
+                                        <span asp-validation-for="AddGameDto.PersonalRating" class="text-danger small"></span>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">&nbsp;</label>
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="bi bi-plus-circle"></i> Add Game
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-12">
+                                        <label class="form-label">Personal Notes (Optional)</label>
+                                        <textarea asp-for="AddGameDto.PersonalNotes"
+                                                  class="form-control"
+                                                  rows="2"
+                                                  placeholder="Add your thoughts about this game..."></textarea>
+                                        <span asp-validation-for="AddGameDto.PersonalNotes" class="text-danger small"></span>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Games Grid -->
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h4 class="mb-0">Games in Collection (@Model.Collection.GameCount)</h4>
+                    @if (Model.Collection.Games != null && Model.Collection.Games.Any())
+                    {
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="bi bi-sort-down"></i> Sort
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="?sort=date">Date Added (Newest)</a></li>
+                                <li><a class="dropdown-item" href="?sort=date_old">Date Added (Oldest)</a></li>
+                                <li><a class="dropdown-item" href="?sort=title">Title (A-Z)</a></li>
+                                <li><a class="dropdown-item" href="?sort=rating">Rating (Highest)</a></li>
+                            </ul>
+                        </div>
+                    }
+                </div>
+
+                @if (Model.Collection.Games == null || !Model.Collection.Games.Any())
+                {
+                    <div class="text-center py-5">
+                        <i class="bi bi-controller display-1 text-muted mb-3"></i>
+                        <h4>No Games in This Collection</h4>
+                        <p class="text-muted mb-4">Start adding games to build your collection</p>
+                        @if (Model.IsOwner && Model.AllGames.Any())
+                        {
+                            <a href="#addGameForm" class="btn btn-primary">
+                                <i class="bi bi-plus-circle"></i> Add Your First Game
+                            </a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="row">
+                        @foreach (var game in Model.Collection.Games)
+                        {
+                            <div class="col-md-6 col-lg-4 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 class="card-title mb-0">@game.GameTitle</h5>
+                                            @if (game.PersonalRating.HasValue)
+                                            {
+                                                <div class="text-warning">
+                                                    @for (int i = 1; i <= 5; i++)
+                                                    {
+                                                        <i class="bi @(i <= Math.Ceiling(game.PersonalRating.Value / 2.0) ? "bi-star-fill" : "bi-star")"></i>
+                                                    }
+                                                    <small class="text-muted ms-1">(@game.PersonalRating/10)</small>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <p class="card-text text-muted small">
+                                            <i class="bi bi-calendar me-1"></i>
+                                            Added @game.DateAdded.ToString("dd MMM yyyy")
+                                        </p>
+
+                                        @if (!string.IsNullOrEmpty(game.PersonalNotes))
+                                        {
+                                            <div class="bg-light p-2 rounded mb-2">
+                                                <small class="text-muted">Your notes:</small>
+                                                <p class="mb-0 small">@game.PersonalNotes</p>
+                                            </div>
+                                        }
+
+                                        @if (game.Completed)
+                                        {
+                                            <span class="badge bg-success me-1 mb-1">
+                                                <i class="bi bi-check-circle"></i> Completed
+                                            </span>
+                                        }
+                                        @if (game.CurrentlyPlaying)
+                                        {
+                                            <span class="badge bg-info me-1 mb-1">
+                                                <i class="bi bi-controller"></i> Currently Playing
+                                            </span>
+                                        }
+                                    </div>
+                                    <div class="card-footer bg-transparent">
+                                        <div class="d-flex justify-content-between">
+                                            <a href="/Games/Details/@game.GameId" class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-info-circle"></i> Game Details
+                                            </a>
+                                            @if (Model.IsOwner)
+                                            {
+                                                <form method="post" asp-page-handler="RemoveGame">
+                                                    <input type="hidden" name="gameId" value="@game.GameId" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                            onclick="return confirm('Remove this game from collection?')">
+                                                        <i class="bi bi-trash"></i> Remove
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Recommendations -->
+        @if (Model.RecommendedGames.Any())
+        {
+            <div class="row mt-5">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="bi bi-lightbulb text-warning me-2"></i>
+                                Recommended Games Based on This Collection
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                @foreach (var game in Model.RecommendedGames)
+                                {
+                                    <div class="col-md-4 col-lg-2 mb-3">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <h6 class="card-title">@game.Title</h6>
+                                                <p class="card-text small text-muted">
+                                                    @game.ReleaseYear
+                                                    @if (game.MetacriticScore.HasValue)
+                                                    {
+                                                        <span class="badge bg-secondary ms-1">@game.MetacriticScore</span>
+                                                    }
+                                                </p>
+                                                <div class="d-flex gap-1">
+                                                    <a href="/Games/Details/@game.Id" class="btn btn-sm btn-outline-primary flex-grow-1">
+                                                        View
+                                                    </a>
+                                                    @if (Model.IsOwner)
+                                                    {
+                                                        <form method="post" asp-page-handler="AddGame">
+                                                            <input type="hidden" asp-for="AddGameDto.GameId" value="@game.Id" />
+                                                            <button type="submit" class="btn btn-sm btn-outline-success" title="Add to collection">
+                                                                <i class="bi bi-plus"></i>
+                                                            </button>
+                                                        </form>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Statistics -->
+        @if (Model.Collection.Games != null && Model.Collection.Games.Any())
+        {
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Collection Statistics</h6>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row mb-0">
+                                <dt class="col-6">Total Games</dt>
+                                <dd class="col-6">@Model.Collection.GameCount</dd>
+
+                                @{
+                                    var completedCount = Model.Collection.Games.Count(g => g.Completed);
+                                    var playingCount = Model.Collection.Games.Count(g => g.CurrentlyPlaying);
+                                    var avgRating = Model.Collection.Games
+                                    .Where(g => g.PersonalRating.HasValue)
+                                    .Select(g => g.PersonalRating.Value)
+                                    .DefaultIfEmpty(0)
+                                    .Average();
+                                }
+
+                                <dt class="col-6">Completed</dt>
+                                <dd class="col-6">@completedCount</dd>
+
+                                <dt class="col-6">Currently Playing</dt>
+                                <dd class="col-6">@playingCount</dd>
+
+                                @if (avgRating > 0)
+                                {
+                                    <dt class="col-6">Average Rating</dt>
+                                    <dd class="col-6">
+                                        <div class="text-warning">
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="bi @(i <= Math.Round(avgRating / 2.0) ? "bi-star-fill" : "bi-star")"></i>
+                                            }
+                                            <small class="text-muted ms-1">(@avgRating.ToString("0.0")/10)</small>
+                                        </div>
+                                    </dd>
+                                }
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">Quick Actions</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="/Games" class="btn btn-outline-primary">
+                                    <i class="bi bi-search me-2"></i>Browse More Games
+                                </a>
+                                <button type="button" class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#exportModal">
+                                    <i class="bi bi-download me-2"></i>Export Collection
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Delete Collection Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Collection</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete the collection <strong>@Model.Collection.Name</strong>?</p>
+                    <p class="text-danger">This action cannot be undone. All @Model.Collection.GameCount games will be removed from this collection.</p>
+                </div>
+                <div class="modal-footer">
+                    <form method="post" asp-page="Index" asp-page-handler="Delete">
+                        <input type="hidden" name="id" value="@Model.Collection.Id" />
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Delete Collection</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div class="modal fade" id="exportModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Export Collection</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Export your collection data in different formats:</p>
+                    <div class="d-grid gap-2">
+                        <a href="/api/collections/@Model.Collection.Id/export/json" class="btn btn-outline-primary">
+                            <i class="bi bi-filetype-json me-2"></i>JSON Format
+                        </a>
+                        <a href="/api/collections/@Model.Collection.Id/export/csv" class="btn btn-outline-primary">
+                            <i class="bi bi-filetype-csv me-2"></i>CSV Format
+                        </a>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="container text-center py-5">
+        <i class="bi bi-exclamation-triangle display-1 text-warning mb-3"></i>
+        <h2>Collection Not Found</h2>
+        <p class="lead">The collection you're looking for doesn't exist or has been removed.</p>
+        <a href="/Collections" class="btn btn-primary">Back to Collections</a>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }

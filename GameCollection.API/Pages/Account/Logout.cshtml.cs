@@ -10,7 +10,19 @@ namespace GameCollection.API.Pages.Account
     {
         public async Task<IActionResult> OnPostAsync()
         {
-            await HttpContext.SignOutAsync();
+            await HttpContext.SignOutAsync("Cookies");
+            HttpContext.Session.Clear();
+
+            TempData["SuccessMessage"] = "You have been logged out successfully.";
+            return RedirectToPage("/Index");
+        }
+
+        public async Task<IActionResult> OnGetAsync()
+        {
+            await HttpContext.SignOutAsync("Cookies");
+            HttpContext.Session.Clear();
+
+            TempData["SuccessMessage"] = "You have been logged out successfully.";
             return RedirectToPage("/Index");
         }
     }

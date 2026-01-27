@@ -1,0 +1,89 @@
+﻿@* Pages/Error/403.cshtml *@
+@page "/403"
+@model GameCollection.API.Pages.Error.ErrorModel
+
+@{
+    ViewData["Title"] = "Access Denied";
+    Layout = "_Layout";
+    Model.StatusCode = 403;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 text-center">
+            <div class="mb-4">
+                <i class="bi bi-shield-lock display-1 text-danger"></i>
+            </div>
+
+            <h1 class="display-4 fw-bold mb-3">Access Denied</h1>
+            <h2 class="h3 mb-4">You don't have permission</h2>
+
+            <p class="lead mb-4">
+                Sorry, but you don't have permission to access this page or resource.
+                This area requires special privileges.
+            </p>
+
+            <!-- User Info -->
+            @if (User?.Identity?.IsAuthenticated ?? false)
+            {
+                <div class="alert alert-info mb-4">
+                    <i class="bi bi-person-circle me-2"></i>
+                    You are logged in as: <strong>@User.Identity.Name</strong>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-warning mb-4">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    You are not logged in. Some features require authentication.
+                </div>
+            }
+
+            <!-- Action Buttons -->
+            <div class="d-grid gap-3 col-lg-8 mx-auto">
+                @if (User?.Identity?.IsAuthenticated ?? false)
+                {
+                    <a href="/Account/Profile" class="btn btn-primary btn-lg">
+                        <i class="bi bi-person me-2"></i>Go to Your Profile
+                    </a>
+
+                    <form method="post" asp-page="/Account/Logout" class="d-grid">
+                        <button type="submit" class="btn btn-outline-danger btn-lg">
+                            <i class="bi bi-box-arrow-right me-2"></i>Logout and Try Again
+                        </button>
+                    </form>
+                }
+                else
+                {
+                    <a href="/Account/Login" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>Login to Continue
+                    </a>
+
+                    <a href="/Account/Register" class="btn btn-success btn-lg">
+                        <i class="bi bi-person-plus me-2"></i>Create New Account
+                    </a>
+                }
+
+                <a href="/" class="btn btn-outline-secondary btn-lg">
+                    <i class="bi bi-house me-2"></i>Return to Homepage
+                </a>
+            </div>
+
+            <!-- Contact Admin -->
+            <div class="card mt-5">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="bi bi-shield-check me-2"></i>Need Access?
+                    </h6>
+                    <p class="card-text small">
+                        If you believe you should have access to this resource,
+                        please contact the administrator.
+                    </p>
+                    <a href="mailto:admin@gamecollection.com" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-envelope me-1"></i>Contact Admin
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace GameCollection.API.Pages
+namespace GameCollection.API.Pages.Error
 {
-    public class ErrorModel : PageModel
+    public class _403Model : PageModel
     {
         public void OnGet()
         {

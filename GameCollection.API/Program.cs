@@ -128,14 +128,19 @@ builder.Services.AddSession(options =>
 });
 
 // Add Authentication
-builder.Services.AddAuthentication("Cookies")
-    .AddCookie("Cookies", options =>
-    {
-        options.LoginPath = "/Account/Login";
-        options.LogoutPath = "/Account/Logout";
-        options.AccessDeniedPath = "/Account/AccessDenied";
-        options.ExpireTimeSpan = TimeSpan.FromDays(7);
-    });
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = "Cookies";
+    options.DefaultChallengeScheme = "Cookies";
+})
+.AddCookie("Cookies", options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.LogoutPath = "/Account/Logout";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+    options.ExpireTimeSpan = TimeSpan.FromDays(7);
+    options.SlidingExpiration = true;
+});
 
 // Add Authorization
 builder.Services.AddAuthorization();
@@ -154,6 +159,7 @@ builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<ICollectionService, CollectionService>();
+builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
 
 var app = builder.Build();
@@ -177,14 +183,29 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Configure the HTTP request pipeline.
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI(c =>
+//    {
+//        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Game Collection API v1");
+//        c.RoutePrefix = "swagger";
+//    });
+//}
+
+// Development error pages
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Game Collection API v1");
-        c.RoutePrefix = "swagger";
-    });
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    // Production error handling
+    app.UseExceptionHandler("/Error");
+    app.UseStatusCodePagesWithReExecute("/Error", "?statusCode={0}");
+
+    // Η ασφάλεια του HSTS
+    app.UseHsts();
 }
 
 app.UseCors("AllowFrontend");
@@ -196,5 +217,16 @@ app.UseAuthorization();
 app.UseSession();
 app.MapRazorPages();
 app.MapControllers();
+
+app.Use(async (context, next) =>
+{
+    await next();
+
+    if (context.Response.StatusCode == 404 && !context.Response.HasStarted)
+    {
+        context.Request.Path = "/404";
+        await next();
+    }
+});
 
 app.Run();

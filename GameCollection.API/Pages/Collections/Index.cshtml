@@ -1,4 +1,131 @@
-﻿@page
+﻿@* Pages/Collections/Index.cshtml *@
+@page
 @model GameCollection.API.Pages.Collections.IndexModel
+
 @{
+    ViewData["Title"] = "My Collections";
 }
+
+<div class="container">
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="mb-2">My Collections</h1>
+                    <p class="text-muted mb-0">Organize your games into custom collections</p>
+                </div>
+                <div>
+                    <a href="/Collections/Create" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-2"></i>Create New Collection
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Collections Grid -->
+    <div class="row">
+        @if (Model.UserCollections.Any())
+        {
+            foreach (var collection in Model.UserCollections)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 collection-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h5 class="card-title mb-0">@collection.Name</h5>
+                                <span class="badge bg-primary">@collection.GameCount games</span>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(collection.Description))
+                            {
+                                <p class="card-text text-muted small mb-3">@collection.Description</p>
+                            }
+
+                            <div class="d-flex justify-content-between align-items-center text-muted small mb-3">
+                                <span>
+                                    <i class="bi bi-calendar me-1"></i>
+                                    @collection.CreatedAt.ToString("dd MMM yyyy")
+                                </span>
+                            </div>
+
+                            <!-- Quick Actions -->
+                            <div class="d-grid gap-2">
+                                <a href="/Collections/Details/@collection.Id" class="btn btn-outline-primary">
+                                    <i class="bi bi-eye me-2"></i>View Collection
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <i class="bi bi-collection display-1 text-muted mb-4"></i>
+                    <h3>No Collections Yet</h3>
+                    <p class="text-muted mb-4">
+                        You haven't created any collections yet.
+                        Start organizing your games by creating your first collection!
+                    </p>
+                    <a href="/Collections/Create" class="btn btn-primary btn-lg">
+                        <i class="bi bi-plus-circle me-2"></i>Create Your First Collection
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Quick Stats -->
+    @if (Model.UserCollections.Any())
+    {
+        <div class="row mt-5">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Collections Overview</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 text-center mb-3">
+                                <div class="display-6 text-primary">@Model.UserCollections.Count</div>
+                                <div class="text-muted">Total Collections</div>
+                            </div>
+                            <div class="col-md-3 text-center mb-3">
+                                <div class="display-6 text-success">@Model.UserCollections.Sum(c => c.GameCount)</div>
+                                <div class="text-muted">Total Games</div>
+                            </div>
+                            <div class="col-md-3 text-center mb-3">
+                                <div class="display-6 text-info">
+                                    @(Model.UserCollections.Count > 0 ?
+                                                                    (Model.UserCollections.Sum(c => c.GameCount) / Model.UserCollections.Count) : 0)
+                            </div>
+                            <div class="text-muted">Avg Games per Collection</div>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="display-6 text-warning">
+                                @(Model.UserCollections.MaxBy(c => c.GameCount)?.GameCount ?? 0)
+                            </div>
+                            <div class="text-muted">Largest Collection</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+        }
+</div>
+
+<style>
+    .collection-card {
+        transition: transform 0.2s;
+    }
+
+        .collection-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+</style>

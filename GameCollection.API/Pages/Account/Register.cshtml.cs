@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
 using GameCollection.Application.Services;
+using GameCollection.Application.DTOs;
 
 namespace GameCollection.API.Pages.Account
 {
@@ -12,68 +13,43 @@ namespace GameCollection.API.Pages.Account
     {
         private readonly IUserService _userService;
 
+        [BindProperty]
+        public RegisterDto RegisterDto { get; set; } = new();
+
+        [BindProperty]
+        public bool AcceptTerms { get; set; }
+
+        public string? ReturnUrl { get; set; }
+
         public RegisterModel(IUserService userService)
         {
             _userService = userService;
         }
 
-        [BindProperty]
-        public InputModel Input { get; set; }
-        
-        public string ReturnUrl { get; set; }
-
-        public class InputModel
-        {
-            [Required(ErrorMessage = "Please choose a username")]
-            [MinLength(3, ErrorMessage = "Username must be at least 3 characters")]
-            [MaxLength(50, ErrorMessage = "Username cannot exceed 50 characters")]
-            [Display(Name = "Username")]
-            public string Username { get; set; }
-
-            [Required(ErrorMessage = "Please enter your email")]
-            [EmailAddress(ErrorMessage = "Please eneter a valid email address")]
-            [Display(Name = "Email")]
-            public string Email { get; set; }
-
-            [Required(ErrorMessage = "Please choose a password")]
-            [MinLength(6, ErrorMessage = "Password must be at least 6 characters")]
-            [DataType(DataType.Password)]
-            [Display(Name = "Password")]
-            public string Password { get; set; }
-
-            [DataType(DataType.Password)]
-            [Display(Name = "Confirm Password")]
-            [Compare("Password", ErrorMessage = "Passwords do not match")]
-            public string ConfirmPassword { get; set; }
-        }
-
-        public void OnGet(string returnUrl = null)
+        public void OnGet(string? returnUrl = null)
         {
             ReturnUrl = returnUrl;
         }
 
-        public async Task<IActionResult> OnPostAsync(string returnUrl = null)
+        public async Task<IActionResult> OnPostAsync()
         {
-            ReturnUrl = returnUrl;
-
             if (!ModelState.IsValid)
             {
                 return Page();
             }
 
+            if (!AcceptTerms)
+            {
+                ModelState.AddModelError(string.Empty, "You must accept the terms and conditions");
+                return Page();
+            }
+
             try
             {
-                // Registration with IUserService
-                var registerDto = new Application.DTOs.RegisterDto()
-                {
-                    Username = Input.Username,
-                    Email = Input.Email,
-                    Password = Input.Password
-                };
+                // Register User
+                var authResponse = await _userService.RegisterAsync(RegisterDto);
 
-                var authResponse = await _userService.RegisterAsync(registerDto);
-
-                // Auto-Login after Register
+                // Create Claims
                 var claims = new List<Claim>()
                 {
                     new Claim(ClaimTypes.NameIdentifier, authResponse.UserId.ToString()),
@@ -84,13 +60,28 @@ namespace GameCollection.API.Pages.Account
 
                 var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
 
+                var authProperties = new AuthenticationProperties()
+                {
+                    IsPersistent = true,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7),
+                    RedirectUri = ReturnUrl ?? "/"
+                };
+
+                // Auto Sign-In after Registration
                 await HttpContext.SignInAsync(
                     CookieAuthenticationDefaults.AuthenticationScheme,
-                    new ClaimsPrincipal(claimsIdentity));
+                    new ClaimsPrincipal(claimsIdentity),
+                    authProperties);
 
+                // Store Token in Session
+                HttpContext.Session.SetString("JWT Token", authResponse.Token);
+
+                TempData["SuccessMessage"] = $"Welcome {authResponse.Username}! Your account has been created successfully!";
+
+                // Redirect
                 if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
                 {
-                    return LocalRedirect(ReturnUrl);
+                    return Redirect(ReturnUrl);
                 }
 
                 return RedirectToPage("/Index");
@@ -100,9 +91,9 @@ namespace GameCollection.API.Pages.Account
                 ModelState.AddModelError(string.Empty, ex.Message);
                 return Page();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, "An error occured during registration.");
+                ModelState.AddModelError(string.Empty, "An error occurred during registration.Please try again.");
                 return Page();
             }
         }

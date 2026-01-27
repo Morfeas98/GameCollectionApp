@@ -77,7 +77,7 @@ namespace GameCollection.Infrastructure.Repositories
             if (collectionGame != null)
             {
                 collectionGame.IsDeleted = true;
-                collectionGame.UpdateAt = DateTime.UtcNow;
+                collectionGame.UpdatedAt = DateTime.UtcNow;
                 _context.CollectionGames.Update(collectionGame);
             }
         }
@@ -105,8 +105,75 @@ namespace GameCollection.Infrastructure.Repositories
 
         public async Task UpdateCollectionGameAsync(CollectionGame collectionGame)
         {
-            collectionGame.UpdateAt = DateTime.UtcNow;
+            collectionGame.UpdatedAt = DateTime.UtcNow;
             _context.CollectionGames.Update(collectionGame);
+        }
+
+        public async Task<int> GetUserCollectionCountAsync(int userId)
+        {
+            return await _context.GameCollections
+                .CountAsync(c => c.UserId == userId && !c.IsDeleted);
+        }
+
+        public async Task<int> GetUserTotalGamesInCollectionsAsync(int userId)
+        {
+            return await _context.CollectionGames
+                .Include(cg => cg.Collection)
+                .Where(cg => cg.Collection.UserId == userId &&
+                            !cg.IsDeleted &&
+                            !cg.Collection.IsDeleted)
+                .CountAsync();
+        }
+
+        public async Task<int> GetUserCompletedGamesCountAsync(int userId)
+        {
+            return await _context.CollectionGames
+                .Include(cg => cg.Collection)
+                .Where(cg => cg.Collection.UserId == userId &&
+                            !cg.IsDeleted &&
+                            !cg.Collection.IsDeleted &&
+                            cg.Completed)
+                .CountAsync();
+        }
+
+        public async Task<int> GetUserCurrentlyPlayingCountAsync(int userId)
+        {
+            return await _context.CollectionGames
+                .Include(cg => cg.Collection)
+                .Where(cg => cg.Collection.UserId == userId &&
+                            !cg.IsDeleted &&
+                            !cg.Collection.IsDeleted &&
+                            cg.CurrentlyPlaying)
+                .CountAsync();
+        }
+
+        public async Task<double> GetUserAverageRatingAsync(int userId)
+        {
+            var ratings = await _context.CollectionGames
+                .Include(cg => cg.Collection)
+                .Where(cg => cg.Collection.UserId == userId &&
+                            !cg.IsDeleted &&
+                            !cg.Collection.IsDeleted &&
+                            cg.PersonalRating.HasValue)
+                .Select(cg => cg.PersonalRating.Value)
+                .ToListAsync();
+
+            if (!ratings.Any())
+                return 0;
+
+            return ratings.Average();
+        }
+
+        public async Task<DateTime?> GetUserLastActivityAsync(int userId)
+        {
+            return await _context.CollectionGames
+                .Include(cg => cg.Collection)
+                .Where(cg => cg.Collection.UserId == userId &&
+                            !cg.IsDeleted &&
+                            !cg.Collection.IsDeleted)
+                .OrderByDescending(cg => cg.UpdatedAt ?? cg.CreatedAt)
+                .Select(cg => cg.UpdatedAt ?? cg.CreatedAt)
+                .FirstOrDefaultAsync();
         }
     }
 }

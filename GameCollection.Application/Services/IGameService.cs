@@ -16,5 +16,8 @@ namespace GameCollection.Application.Services
         Task<bool> DeleteGameAsync(int id);
         Task<IEnumerable<GameDto>> SearchGamesAsync(string searchTerm);
         Task<IEnumerable<GameDto>> GetRecommendationsAsync(int gameId);
+        Task<List<int>> GetGamePlatformIdsAsync(int gameId);
+        Task<List<int>> GetGameGenreIdsAsync(int gameId);
+        Task<int?> GetGameFranchiseIdAsync(int gameId);
     }
 }

@@ -91,6 +91,18 @@ namespace GameCollection.Application.Services
                 game.Franchise = franchise;
             }
 
+            // Set Image URL
+            if (!string.IsNullOrEmpty(gameDto.ImageUrl))
+                game.ImageUrl = gameDto.ImageUrl;
+
+            // Set Metacritic Score
+            if (gameDto.MetacriticScore.HasValue)
+                game.MetacriticScore = gameDto.MetacriticScore;
+
+            // Set Metacritic URL
+            if (!string.IsNullOrEmpty(gameDto.MetacriticUrl))
+                game.MetacriticUrl = gameDto.MetacriticUrl;
+
             var createdGame = await _gameRepository.AddAsync(game);
             await _gameRepository.SaveChangesAsync();
 
@@ -168,6 +180,15 @@ namespace GameCollection.Application.Services
             if (gameDto.Publisher != null)
                 game.Publisher = gameDto.Publisher;
 
+            if (gameDto.ImageUrl != null)
+                game.ImageUrl = gameDto.ImageUrl;
+
+            if (gameDto.MetacriticScore.HasValue)
+                game.MetacriticScore = gameDto.MetacriticScore;
+
+            if (gameDto.MetacriticUrl != null)
+                game.MetacriticUrl = gameDto.MetacriticUrl;
+
             // Update Franchise if Provided
             if (gameDto.FranchiseId.HasValue)
             {
@@ -175,24 +196,106 @@ namespace GameCollection.Application.Services
                 if (franchise != null)
                     game.Franchise = franchise;
             }
+            else if (gameDto.FranchiseId == 0)
+            {
+                game.FranchiseId = null;
+                game.Franchise = null;
+            }
+
+            // Update Platforms if Provided
+            if (gameDto.PlatformIds != null)
+            {
+                game.GamePlatforms.Clear();
+
+                foreach (var platformId in gameDto.PlatformIds)
+                {
+                    var platform = await _platformRepository.GetByIdAsync(platformId);
+                    if (platform == null)
+                        throw new ArgumentException($"Platform with ID {platformId} not found");
+
+                    game.GamePlatforms.Add(new GamePlatform { Platform = platform });
+                }
+            }
+
+            // Update Genres if Provided
+            if (gameDto.GenreIds != null)
+            {
+                game.GameGenres.Clear();
+
+                foreach (var genreId in gameDto.GenreIds)
+                {
+                    var genre = await _genreRepository.GetByIdAsync(genreId);
+                    if (genre == null)
+                        throw new ArgumentException($"Genre with ID {genreId} not found");
+
+                    game.GameGenres.Add(new GameGenre { Genre = genre });
+                }
+            }
+
+            game.UpdatedAt = DateTime.UtcNow;
 
             await _gameRepository.UpdateAsync(game);
             await _gameRepository.SaveChangesAsync();
 
+            //return await GetGameByIdAsync(id);
             return _mapper.Map<GameDto>(game);
         }
 
 
         public async Task<bool> DeleteGameAsync(int id)
         {
-            var game = await _gameRepository.GetByIdAsync(id);
+            var game = await _gameRepository.GetGameWithDetailsAsync(id);
             if (game == null)
                 return false;
 
-            await _gameRepository.DeleteAsync(game);
+            game.IsDeleted = true;
+            game.UpdatedAt = DateTime.UtcNow;
+
+            foreach (var gamePlatform in game.GamePlatforms)
+            {
+                gamePlatform.IsDeleted = true;
+                gamePlatform.UpdatedAt = DateTime.UtcNow;
+            }
+
+            foreach (var gameGenre in game.GameGenres)
+            {
+                gameGenre.IsDeleted = true;
+                gameGenre.UpdatedAt = DateTime.UtcNow;
+            }
+
             await _gameRepository.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<List<int>> GetGamePlatformIdsAsync(int gameId)
+        {
+            var game = await _gameRepository.GetGameWithDetailsAsync(gameId);
+            if (game == null)
+                return new List<int>();
+
+            return game.GamePlatforms
+                .Select(gp => gp.PlatformId)
+                .ToList();
+        }
+
+
+        public async Task<List<int>> GetGameGenreIdsAsync(int gameId)
+        {
+            var game = await _gameRepository.GetGameWithDetailsAsync(gameId);
+            if (game == null)
+                return new List<int>();
+
+            return game.GameGenres
+                .Select(gg => gg.GenreId)
+                .ToList();
+        }
+
+
+        public async Task<int?> GetGameFranchiseIdAsync(int gameId)
+        {
+            var game = await _gameRepository.GetGameWithDetailsAsync(gameId);
+            return game?.FranchiseId;
         }
     }
 }

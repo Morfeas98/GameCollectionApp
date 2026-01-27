@@ -3,64 +3,155 @@
 @model GameCollection.API.Pages.Account.ProfileModel
 
 @{
-    ViewData["Title"] = "Profile";
+    ViewData["Title"] = "My Profile";
 }
 
 <div class="container">
     <div class="row">
-        <div class="col-md-4">
-            <div class="card mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item active">My Profile</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column: User Info -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
                 <div class="card-body text-center">
                     <div class="mb-3">
-                        <i class="bi bi-person-circle display-1 text-primary"></i>
+                        <div class="avatar-circle bg-primary text-white display-4 rounded-circle d-inline-flex align-items-center justify-content-center"
+                             style="width: 100px; height: 100px;">
+                            @if (!string.IsNullOrEmpty(Model.UserProfile?.Username))
+                            {
+                                @Model.UserProfile.Username.Substring(0, 1).ToUpper()
+                            }
+                        </div>
                     </div>
-                    <h5 class="card-title">@Model.Profile.Username</h5>
-                    <p class="card-text text-muted">@Model.Profile.Email</p>
-                    <p class="card-text">
-                        <small class="text-muted">
-                            Member since @Model.Profile.CreatedAt.ToString("MMMM yyyy")
-                        </small>
+
+                    <h4 class="card-title">@Model.UserProfile?.Username</h4>
+                    <p class="card-text text-muted">
+                        <i class="bi bi-envelope me-1"></i>
+                        @Model.UserProfile?.Email
                     </p>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary">
+                            <i class="bi bi-pencil me-2"></i>Edit Profile
+                        </button>
+                        <button class="btn btn-outline-secondary">
+                            <i class="bi bi-gear me-2"></i>Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Statistics</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-8">Collections</dt>
+                        <dd class="col-4">@Model.UserStats.TotalCollections</dd>
+
+                        <dt class="col-8">Games in Collections</dt>
+                        <dd class="col-4">@Model.UserStats.TotalGamesInCollections</dd>
+
+                        @if (Model.UserStats.CompletedGames > 0)
+                        {
+                            <dt class="col-8">Completed Games</dt>
+                            <dd class="col-4">@Model.UserStats.CompletedGames</dd>
+                        }
+
+                        @if (Model.UserStats.CurrentlyPlaying > 0)
+                        {
+                            <dt class="col-8">Currently Playing</dt>
+                            <dd class="col-4">@Model.UserStats.CurrentlyPlaying</dd>
+                        }
+
+                        @if (Model.UserStats.AverageRating > 0)
+                        {
+                            <dt class="col-8">Average Rating</dt>
+                            <dd class="col-4">
+                                <div class="text-warning">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <i class="bi @(i <= Math.Round(Model.UserStats.AverageRating / 2.0) ? "bi-star-fill" : "bi-star")"></i>
+                                    }
+                                    <small class="text-muted ms-1">(@Model.UserStats.AverageRating.ToString("0.0")/10)</small>
+                                </div>
+                            </dd>
+                        }
+
+                        @if (Model.UserStats.LastActivity.HasValue)
+                        {
+                            <dt class="col-8">Last Activity</dt>
+                            <dd class="col-4">@Model.UserStats.LastActivity.Value.ToString("dd MMM yyyy")</dd>
+                        }
+                    </dl>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-8">
+        <!-- Right Column: Activity & Collections -->
+        <div class="col-lg-8">
+            <!-- Recent Activity -->
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5 class="mb-0">My Collections</h5>
+                    <h5 class="mb-0">Recent Activity</h5>
                 </div>
                 <div class="card-body">
-                    @if (Model.Collections.Any())
-                    {
-                        <div class="list-group">
-                            @foreach (var collection in Model.Collections)
-                            {
-                                <a href="/Collections/Details/@collection.Id" class="list-group-item list-group-item-action">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h6 class="mb-1">@collection.Name</h6>
-                                        <small>@collection.GameCount games</small>
-                                    </div>
-                                    @if (!string.IsNullOrEmpty(collection.Description))
-                                    {
-                                        <p class="mb-1 text-muted">@collection.Description</p>
-                                    }
-                                    <small class="text-muted">Created @collection.CreatedAt.ToString("MMMM dd, yyyy")</small>
-                                </a>
-                            }
+                    <div class="text-center py-3">
+                        <i class="bi bi-activity display-6 text-muted mb-3"></i>
+                        <h5>No Recent Activity</h5>
+                        <p class="text-muted">Your activity will appear here as you use the app.</p>
+                        <a href="/Games" class="btn btn-outline-primary">
+                            <i class="bi bi-search me-2"></i>Browse Games
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-collection display-4 text-primary mb-3"></i>
+                            <h5>My Collections</h5>
+                            <p class="card-text">View and manage all your game collections.</p>
+                            <a href="/Collections" class="btn btn-outline-primary w-100">
+                                Go to Collections
+                            </a>
                         </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-4">
-                            <i class="bi bi-collection display-4 text-muted mb-3"></i>
-                            <h5>No Collections Yet</h5>
-                            <p class="text-muted">Start by creating your first collection!</p>
-                            <a href="/Collections/Create" class="btn btn-primary">Create Collection</a>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="bi bi-star display-4 text-warning mb-3"></i>
+                            <h5>My Ratings</h5>
+                            <p class="card-text">See all the games you've rated and reviewed.</p>
+                            <a href="#" class="btn btn-outline-primary w-100">
+                                View Ratings
+                            </a>
                         </div>
-                    }
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .avatar-circle {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+</style>

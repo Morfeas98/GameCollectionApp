@@ -1,4 +1,221 @@
-﻿@page
+﻿@* Pages/Games/Create.cshtml (ΒΑΣΙΚΗ ΔΟΜΗ) *@
+@page
 @model GameCollection.API.Pages.Games.CreateModel
+
 @{
+    ViewData["Title"] = "Add New Game";
 }
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Games">Games</a></li>
+                    <li class="breadcrumb-item active">Add New Game</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Add New Game to Collection</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="gameForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <!-- Βασικά Πληροφορίες -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Basic Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8 mb-3">
+                                        <label asp-for="GameForm.Title" class="form-label"></label>
+                                        <input asp-for="GameForm.Title" class="form-control" />
+                                        <span asp-validation-for="GameForm.Title" class="text-danger small"></span>
+                                    </div>
+
+                                    <div class="col-md-4 mb-3">
+                                        <label asp-for="GameForm.ReleaseYear" class="form-label"></label>
+                                        <input asp-for="GameForm.ReleaseYear" class="form-control" />
+                                        <span asp-validation-for="GameForm.ReleaseYear" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="GameForm.Description" class="form-label"></label>
+                                    <textarea asp-for="GameForm.Description" class="form-control" rows="3"></textarea>
+                                    <span asp-validation-for="GameForm.Description" class="text-danger small"></span>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="GameForm.Developer" class="form-label"></label>
+                                        <input asp-for="GameForm.Developer" class="form-control" />
+                                        <span asp-validation-for="GameForm.Developer" class="text-danger small"></span>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="GameForm.Publisher" class="form-label"></label>
+                                        <input asp-for="GameForm.Publisher" class="form-control" />
+                                        <span asp-validation-for="GameForm.Publisher" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="GameForm.ImageUrl" class="form-label"></label>
+                                        <input asp-for="GameForm.ImageUrl" class="form-control" placeholder="https://example.com/image.jpg" />
+                                        <span asp-validation-for="GameForm.ImageUrl" class="text-danger small"></span>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="GameForm.FranchiseId" class="form-label"></label>
+                                        <select asp-for="GameForm.FranchiseId"
+                                                asp-items="Model.GameForm.Franchises"
+                                                class="form-select">
+                                        </select>
+                                        <span asp-validation-for="GameForm.FranchiseId" class="text-danger small"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Ratings & Links -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Ratings & Links</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="GameForm.MetacriticScore" class="form-label"></label>
+                                        <input asp-for="GameForm.MetacriticScore" class="form-control" type="number" min="0" max="100" />
+                                        <span asp-validation-for="GameForm.MetacriticScore" class="text-danger small"></span>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="GameForm.MetacriticUrl" class="form-label"></label>
+                                        <input asp-for="GameForm.MetacriticUrl" class="form-control" placeholder="https://www.metacritic.com/game/..." />
+                                        <span asp-validation-for="GameForm.MetacriticUrl" class="text-danger small"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Platforms -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Platforms</h5>
+                                <small class="text-muted">Select all platforms where this game is available</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    @for (int i = 0; i < Model.GameForm.Platforms.Count; i++)
+                                    {
+                                        <div class="col-md-4 col-sm-6 mb-2">
+                                            <div class="form-check">
+                                                <input type="checkbox"
+                                                       class="form-check-input"
+                                                       id="platform-@Model.GameForm.Platforms[i].Value"
+                                                       name="GameForm.SelectedPlatformIds"
+                                                       value="@Model.GameForm.Platforms[i].Value" />
+                                                <label class="form-check-label" for="platform-@Model.GameForm.Platforms[i].Value">
+                                                    @Model.GameForm.Platforms[i].Text
+                                                </label>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Genres -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Genres</h5>
+                                <small class="text-muted">Select all genres that describe this game</small>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    @for (int i = 0; i < Model.GameForm.Genres.Count; i++)
+                                    {
+                                        <div class="col-md-4 col-sm-6 mb-2">
+                                            <div class="form-check">
+                                                <input type="checkbox"
+                                                       class="form-check-input"
+                                                       id="genre-@Model.GameForm.Genres[i].Value"
+                                                       name="GameForm.SelectedGenreIds"
+                                                       value="@Model.GameForm.Genres[i].Value" />
+                                                <label class="form-check-label" for="genre-@Model.GameForm.Genres[i].Value">
+                                                    @Model.GameForm.Genres[i].Text
+                                                </label>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Buttons -->
+                        <div class="d-flex justify-content-between">
+                            <a href="/Games" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left"></i> Cancel
+                            </a>
+                            <div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-check-circle"></i> Create Game
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    @section Scripts 
+                        {
+                        <partial name="_ValidationScriptsPartial" />
+
+                        <script>
+                            // Client-side validation improvements
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const form = document.getElementById('gameForm');
+
+                                // Set current year as default for release year
+                                const yearInput = document.getElementById('GameForm_ReleaseYear');
+                                if (yearInput && !yearInput.value) {
+                                    yearInput.value = new Date().getFullYear();
+                                }
+
+                                // Real-time validation for URL fields
+                                const urlFields = document.querySelectorAll('input[type="url"]');
+                                urlFields.forEach(field => {
+                                    field.addEventListener('blur', function() {
+                                        if (this.value && !isValidUrl(this.value)) {
+                                            this.classList.add('is-invalid');
+                                        } else {
+                                            this.classList.remove('is-invalid');
+                                        }
+                                    });
+                                });
+
+                                function isValidUrl(string) {
+                                    try {
+                                        new URL(string);
+                                        return true;
+                                    } catch (_) {
+                                        return false;
+                                    }
+                                }
+                            });
+                        </script>
+                        }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

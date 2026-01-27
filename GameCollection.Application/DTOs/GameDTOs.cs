@@ -14,7 +14,9 @@ namespace GameCollection.Application.DTOs
         public int ReleaseYear { get; set; }
         public string? Developer { get; set; }
         public string? Publisher { get; set; }
+        public string? ImageUrl { get; set; }
         public int? MetacriticScore { get; set; }
+        public string? MetacriticUrl { get; set; }
         public string? FranchiseName { get; set; }
         public List<string> Platforms { get; set; } = new();
         public List<string> Genres { get; set; } = new();
@@ -30,6 +32,9 @@ namespace GameCollection.Application.DTOs
         public List<int> PlatformIds { get; set; } = new();
         public List<int> GenreIds { get; set; } = new();
         public int? FranchiseId { get; set; }
+        public string? ImageUrl { get; set; }
+        public int? MetacriticScore { get; set; }
+        public string? MetacriticUrl { get; set; }
     }
 
     public class UpdateGameDto
@@ -39,6 +44,9 @@ namespace GameCollection.Application.DTOs
         public int? ReleaseYear { get; set; }
         public string? Developer { get; set; }
         public string? Publisher { get; set; }
+        public string? ImageUrl { get; set; }
+        public int? MetacriticScore { get; set; }
+        public string? MetacriticUrl { get; set; }
         public List<int>? PlatformIds { get; set; }
         public List<int>? GenreIds { get; set; }
         public int? FranchiseId { get; set; }

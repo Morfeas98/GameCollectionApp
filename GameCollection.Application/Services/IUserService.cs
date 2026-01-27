@@ -12,6 +12,7 @@ namespace GameCollection.Application.Services
         Task<AuthResponseDto> RegisterAsync(RegisterDto registerDto);
         Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
         Task<UserProfileDto> GetUserProfileAsync(int userId);
+        Task<UserStatsDto> GetUserStatsAsync(int userId);
     }
 
     public class UserProfileDto
@@ -19,7 +20,9 @@ namespace GameCollection.Application.Services
         public int Id { get; set; }
         public string Username { get; set; } = string.Empty;
         public string Email { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; }
         public int CollectionCount { get; set; }
+
     }
 }

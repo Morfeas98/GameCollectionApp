@@ -14,12 +14,14 @@ namespace GameCollection.Application.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly ICollectionRepository _collectionRepository;
         private readonly ITokenService _tokenService;
         private readonly IMapper _mapper;
 
-        public UserService(IUserRepository userRepository, ITokenService tokenService, IMapper mapper)
+        public UserService(IUserRepository userRepository, ICollectionRepository collectionRepository, ITokenService tokenService, IMapper mapper)
         {
             _userRepository = userRepository;
+            _collectionRepository = collectionRepository;
             _tokenService = tokenService;
             _mapper = mapper;
         }
@@ -90,7 +92,29 @@ namespace GameCollection.Application.Services
             if (user == null)
                 throw new KeyNotFoundException("User not found");
 
-            return _mapper.Map<UserProfileDto>(user);
+            return new UserProfileDto
+            {
+                Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
+                CreatedAt = user.CreatedAt,
+                Role = user.Role
+            };
+        }
+
+        public async Task<UserStatsDto> GetUserStatsAsync(int userId)
+        {
+            return new UserStatsDto
+            {
+                TotalCollections = await _collectionRepository.GetUserCollectionCountAsync(userId),
+                TotalGamesInCollections = await _collectionRepository.GetUserTotalGamesInCollectionsAsync(userId),
+                CompletedGames = await _collectionRepository.GetUserCompletedGamesCountAsync(userId),
+                CurrentlyPlaying = await _collectionRepository.GetUserCurrentlyPlayingCountAsync(userId),
+                AverageRating = await _collectionRepository.GetUserAverageRatingAsync(userId),
+                LastActivity = await _collectionRepository.GetUserLastActivityAsync(userId),
+                TotalReviews = 0, //TEMP
+                WishlistCount = 0 //TEMP
+            };
         }
     }
 }

@@ -15,15 +15,18 @@ namespace GameCollection.Application.Services
     {
         private readonly ICollectionRepository _collectionRepository;
         private readonly IGameRepository _gameRepository;
+        private readonly ICurrentUserService _currentUser;
         private readonly IMapper _mapper;
 
         public CollectionService(
             ICollectionRepository collectionRepository,
             IGameRepository gameRepository,
+            ICurrentUserService currentUser,
             IMapper mapper)
         {
             _collectionRepository = collectionRepository;
             _gameRepository = gameRepository;
+            _currentUser = currentUser;
             _mapper = mapper;
         }
 

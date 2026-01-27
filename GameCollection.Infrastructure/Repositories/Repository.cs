@@ -44,14 +44,14 @@ namespace GameCollection.Infrastructure.Repositories
 
         public virtual async Task UpdateAsync(T entity)
         {
-            entity.UpdateAt = DateTime.UtcNow;
+            entity.UpdatedAt = DateTime.UtcNow;
             _dbSet.Update(entity);
         }
 
         public virtual async Task DeleteAsync(T entity)
         {
             entity.IsDeleted = true;
-            entity.UpdateAt = DateTime.UtcNow;
+            entity.UpdatedAt = DateTime.UtcNow;
             await UpdateAsync(entity);
         }
 

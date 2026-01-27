@@ -1,4 +1,141 @@
-﻿@page
+﻿@* Pages/Collections/Create.cshtml *@
+@page
 @model GameCollection.API.Pages.Collections.CreateModel
+
 @{
+    ViewData["Title"] = "Create New Collection";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Collections">Collections</a></li>
+                    <li class="breadcrumb-item active">Create New</li>
+                </ol>
+            </nav>
+
+            <!-- Create Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="bi bi-plus-circle me-2"></i>
+                        Create New Collection
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" id="createCollectionForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <!-- Collection Name -->
+                        <div class="mb-4">
+                            <label asp-for="CreateCollectionDto.Name" class="form-label fw-bold"></label>
+                            <input asp-for="CreateCollectionDto.Name"
+                                   class="form-control form-control-lg"
+                                   placeholder="e.g., My Favorite RPGs, Games to Play in 2024, etc." />
+                            <span asp-validation-for="CreateCollectionDto.Name" class="text-danger small"></span>
+                            <div class="form-text">Give your collection a descriptive name</div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label asp-for="CreateCollectionDto.Description" class="form-label fw-bold"></label>
+                            <textarea asp-for="CreateCollectionDto.Description"
+                                      class="form-control"
+                                      rows="4"
+                                      placeholder="Describe what this collection is about, what types of games it includes, etc."></textarea>
+                            <span asp-validation-for="CreateCollectionDto.Description" class="text-danger small"></span>
+                            <div class="form-text">Optional: Add a description to help you remember what this collection is for</div>
+                        </div>
+
+                        <!-- Form Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="/Collections" class="btn btn-outline-secondary">
+                                <i class="bi bi-arrow-left me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i>Create Collection
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Tips -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-lightbulb text-warning me-2"></i>
+                        Collection Ideas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-controller text-primary fs-5"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">By Platform</h6>
+                                    <p class="small text-muted mb-0">e.g., "PS5 Games", "Nintendo Switch Collection"</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-tags text-primary fs-5"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">By Genre</h6>
+                                    <p class="small text-muted mb-0">e.g., "RPG Masterpieces", "Action-Adventure Games"</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-calendar text-primary fs-5"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">By Year</h6>
+                                    <p class="small text-muted mb-0">e.g., "2023 Releases", "Classic 90s Games"</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <i class="bi bi-flag text-primary fs-5"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">By Status</h6>
+                                    <p class="small text-muted mb-0">e.g., "Currently Playing", "Completed Games", "Backlog"</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('createCollectionForm');
+            const nameInput = document.getElementById('CreateCollectionDto_Name');
+
+            // Auto-focus στο όνομα
+            if (nameInput) {
+                nameInput.focus();
+            }
+        });
+    </script>
 }

@@ -1,4 +1,46 @@
-﻿@page
+﻿@* Pages/Account/Logout.cshtml *@
+@page
 @model GameCollection.API.Pages.Account.LogoutModel
+
 @{
+    ViewData["Title"] = "Logout";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth-page">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="card shadow text-center">
+                    <div class="card-header bg-info text-white py-4">
+                        <i class="bi bi-box-arrow-right display-4 mb-3"></i>
+                        <h4 class="mb-0">Logging Out</h4>
+                        <small class="opacity-75">Please wait...</small>
+                    </div>
+                    <div class="card-body p-5">
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>You are being logged out.</p>
+                        <p class="text-muted small">You will be redirected to the home page.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Αυτόματο logout μετά από 1 δευτερόλεπτο
+            setTimeout(function() {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/Account/Logout';
+                document.body.appendChild(form);
+                form.submit();
+            }, 1000);
+        });
+    </script>
 }
