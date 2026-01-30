@@ -297,5 +297,92 @@ namespace GameCollection.Application.Services
             var game = await _gameRepository.GetGameWithDetailsAsync(gameId);
             return game?.FranchiseId;
         }
+
+        public async Task<List<GameDto>> GetRecentTopRatedGamesAsync(int count)
+        {
+            var currentYear = DateTime.Now.Year;
+            var games = await _gameRepository.GetAllAsync();
+
+            return games
+                .Where(g => g.ReleaseYear == currentYear && g.MetacriticScore.HasValue)
+                .OrderByDescending(g => g.MetacriticScore)
+                .Take(count)
+                .Select(g => _mapper.Map<GameDto>(g))
+                .ToList();
+        }
+
+        public async Task<List<GameDto>> GetTopRatedGamesAsync(int count)
+        {
+            var recentTopRated = await GetRecentTopRatedGamesAsync(count);
+            var recentTopRatedIds = recentTopRated.Select(g => g.Id).ToHashSet();
+
+            var games = await _gameRepository.GetAllAsync();
+
+            return games
+                .Where(g => g.MetacriticScore.HasValue && !recentTopRatedIds.Contains(g.Id))
+                .OrderByDescending(g => g.MetacriticScore)
+                .Take(count)
+                .Select(g => _mapper.Map<GameDto>(g))
+                .ToList();
+        }
+
+        public async Task<GamePagedResultDto> GetFilteredGamesAsync(GameQueryParams queryParams)
+        {
+            // Validate Pagination
+            if (queryParams.PageNumber < 1) queryParams.PageNumber = 1;
+            if (queryParams.PageSize < 1 || queryParams.PageSize > 50) queryParams.PageSize = 12;
+
+            // Get Filtered Games from Repository
+            var (games, totalCount) = await _gameRepository.GetFilteredGamesAsync(
+                searchTerm: queryParams.SearchQuery,
+                platformId: queryParams.PlatformId,
+                genreId: queryParams.GenreId,
+                franchiseId: queryParams.FranchiseId,
+                minYear: queryParams.MinYear,
+                maxYear: queryParams.MaxYear,
+                sortBy: queryParams.SortBy,
+                pageNumber: queryParams.PageNumber,
+                pageSize: queryParams.PageSize,
+                includeDeleted: queryParams.IncludeDeleted);
+
+            var gameDtos = _mapper.Map<List<GameDto>>(games);
+
+            return new GamePagedResultDto
+            {
+                Games = gameDtos,
+                TotalCount = totalCount,
+                PageNumber = queryParams.PageNumber,
+                PageSize = queryParams.PageSize
+            };
+        }
+
+        public async Task<GamePagedResultDto> GetFilteredGamesAsync(
+            string? searchQuery = null,
+            int? platformId = null,
+            int? genreId = null,
+            int? franchiseId = null,
+            int? minYear = null,
+            int? maxYear = null,
+            string sortBy = "title_asc",
+            int pageNumber = 1,
+            int pageSize = 12,
+            bool includeDeleted = false)
+        {
+            var queryParams = new GameQueryParams
+            {
+                SearchQuery = searchQuery,
+                PlatformId = platformId,
+                GenreId = genreId,
+                FranchiseId = franchiseId,
+                MinYear = minYear,
+                MaxYear = maxYear,
+                SortBy = sortBy,
+                PageNumber = pageNumber,
+                PageSize = pageSize,
+                IncludeDeleted = includeDeleted
+            };
+
+            return await GetFilteredGamesAsync(queryParams);
+        }
     }
 }

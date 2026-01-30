@@ -103,6 +103,7 @@ namespace GameCollection.Application.Services
 
         public async Task<bool> AddGameToCollectionAsync(int collectionId, AddGameToCollectionDto addGameDto, int userId)
         {
+         
             // Verify Ownership
             if (!await _collectionRepository.CollectionBelongsToUserAsync(collectionId, userId))
                 return false;
@@ -118,7 +119,9 @@ namespace GameCollection.Application.Services
                     collectionId,
                     addGameDto.GameId,
                     addGameDto.PersonalRating,
-                    addGameDto.PersonalNotes);
+                    addGameDto.PersonalNotes,
+                    addGameDto.Completed,
+                    addGameDto.CurrentlyPlaying);
 
                 await _collectionRepository.SaveChangesAsync();
                 return true;
@@ -158,10 +161,46 @@ namespace GameCollection.Application.Services
             if (updateDto.PersonalNotes != null)
                 collectionGame.PersonalNotes = updateDto.PersonalNotes;
 
+            collectionGame.Completed = updateDto.Completed;
+
+            collectionGame.CurrentlyPlaying = updateDto.CurrentlyPlaying;
+
             await _collectionRepository.UpdateCollectionGameAsync(collectionGame);
             await _collectionRepository.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<CollectionGameDto?> GetUserGameAsync(int userId, int gameId)
+        {
+            var collectionGame = await _collectionRepository.GetUserGameAsync(userId, gameId);
+
+            if (collectionGame == null)
+                return null;
+
+            return _mapper.Map<CollectionGameDto>(collectionGame);
+        }
+
+        public async Task<IEnumerable<CollectionDto>> GetCollectionsContainingGameAsync(int userId, int gameId)
+        {
+            var collections = await _collectionRepository.GetCollectionsContainingGameAsync(userId, gameId);
+
+            return _mapper.Map<IEnumerable<CollectionDto>>(collections);
+        }
+
+        public async Task<bool> IsGameInUserCollectionAsync(int userId, int gameId)
+        {
+            return await _collectionRepository.IsGameInUserCollectionAsync(userId, gameId);
+        }
+
+        public async Task<CollectionGameDto?> GetCollectionGameDetailsAsync(int userId, int gameId, int collectionId)
+        {
+            // Verify ownership
+            if (!await _collectionRepository.CollectionBelongsToUserAsync(collectionId, userId))
+                return null;
+
+            var collectionGame = await _collectionRepository.GetCollectionGameAsync(collectionId, gameId);
+            return collectionGame != null ? _mapper.Map<CollectionGameDto>(collectionGame) : null;
         }
     }
 }

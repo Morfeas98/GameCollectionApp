@@ -19,5 +19,22 @@ namespace GameCollection.Application.Services
         Task<List<int>> GetGamePlatformIdsAsync(int gameId);
         Task<List<int>> GetGameGenreIdsAsync(int gameId);
         Task<int?> GetGameFranchiseIdAsync(int gameId);
+
+        Task<List<GameDto>> GetRecentTopRatedGamesAsync(int count);
+        Task<List<GameDto>> GetTopRatedGamesAsync(int count);
+
+        Task<GamePagedResultDto> GetFilteredGamesAsync(GameQueryParams queryParams);
+
+        //Task<GamePagedResultDto> GetFilteredGamesAsync(
+        //    string? searchQuery = null,
+        //    int? platformId = null,
+        //    int? genreId = null,
+        //    int? franchiseId = null,
+        //    int? minYear = null,
+        //    int? maxYear = null,
+        //    string sortBy = "title_asc",
+        //    int pageNumber = 1,
+        //    int pageSize = 12,
+        //    bool includeDeleted = false);
     }
 }

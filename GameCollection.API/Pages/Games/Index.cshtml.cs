@@ -1,82 +1,109 @@
+using GameCollection.Application.DTOs;
+using GameCollection.Application.Services;
+using GameCollection.Domain.Common;
+using GameCollection.Domain.Entities;
+using GameCollection.Domain.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using GameCollection.Application.Services;
-using GameCollection.Application.DTOs;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace GameCollection.API.Pages.Games
 {
     public class IndexModel : PageModel
     {
         private readonly IGameService _gameService;
+        private readonly IRepository<Platform> _platformRepository;
+        private readonly IRepository<Genre> _genreRepository;
+        private readonly IRepository<Franchise> _franchiseRepository;
 
-        public List<GameDto> Games { get; set; }
-        public int TotalCount { get; set; }
-        public int PageNumber { get; set; } = 1;
-        public int PageSize { get; set; } = 12; 
-        public string SearchQuery { get; set; }
 
+        public GamePagedResultDto? GameResult { get; set; }
+        public List<SelectListItem> PlatformOptions { get; set; } = new();
+        public List<SelectListItem> GenreOptions { get; set; } = new();
+        public List<SelectListItem> FranchiseOptions { get; set; } = new();
+
+        
         [BindProperty(SupportsGet = true)]
-        public int? PlatformId { get; set; }
+        public GameQueryParams Query { get; set; } = new();
 
-        [BindProperty(SupportsGet = true)]
-        public int? GenreId { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        public int? MinYear { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        public int? MaxYear { get; set; }
-
-        [BindProperty(SupportsGet = true)]
-        public string SortBy { get; set; } = "title";
-
-        public List<PlatformDto> Platforms { get; set; } = new();
-        public List<GenreDto> Genres { get; set; } = new();
-
-        public IndexModel(IGameService gameService)
+        public IndexModel(
+            IGameService gameService,
+            IRepository<Platform> platformRepository,
+            IRepository<Genre> genreRepository,
+            IRepository<Franchise> franchiseRepository)
         {
             _gameService = gameService;
+            _platformRepository = platformRepository;
+            _genreRepository = genreRepository;
+            _franchiseRepository = franchiseRepository;
         }
 
-        public async Task OnGetAsync(
-            int page = 1,
-            string search = null,
-            string sort = "title")
+        public async Task OnGetAsync()
         {
-            PageNumber = page;
-            SearchQuery = search;
-            SortBy = sort;
+            await LoadDropdownsAsync();
 
-            var allGames = await _gameService.GetAllGamesAsync();
-
-            // Apply Search Filter
-            if (!string.IsNullOrEmpty(SearchQuery))
-            {
-                allGames = (await _gameService.SearchGamesAsync(SearchQuery)).ToList();
-            }
-
-            // TODO: additional filters
-            // TODO: sorting
-
-            // Apply Pagination
-            Games = allGames
-                .Skip((PageNumber - 1) * PageSize)
-                .Take(PageSize)
-                .ToList();
-
-            TotalCount = allGames.Count();
+            GameResult = await _gameService.GetFilteredGamesAsync(Query);
         }
-    }
 
-    public class PlatformDto
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-    }
+        private async Task LoadDropdownsAsync()
+        {
+            // Load Platforms
+            var platforms = await _platformRepository.GetAllAsync();
+            PlatformOptions = platforms
+                .Where(p => !p.IsDeleted)
+                .Select(p => new SelectListItem
+                {
+                    Value = p.Id.ToString(),
+                    Text = p.Name
+                })
+                .OrderBy(p => p.Text)
+                .ToList();
+            PlatformOptions.Insert(0, new SelectListItem
+            {
+                Value = "",
+                Text = "All Platforms",
+                Selected = !Query.PlatformId.HasValue
+            });
 
-    public class GenreDto
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
+            // Load Genres
+            var genres = await _genreRepository.GetAllAsync();
+            GenreOptions = genres
+                .Where(g => !g.IsDeleted)
+                .Select(g => new SelectListItem
+                {
+                    Value = g.Id.ToString(),
+                    Text = g.Name
+                })
+                .OrderBy(g => g.Text)
+                .ToList();
+            GenreOptions.Insert(0, new SelectListItem
+            {
+                Value = "",
+                Text = "All Genres",
+                Selected = !Query.GenreId.HasValue
+            });
+
+            // Load Franchises
+            var franchises = await _franchiseRepository.GetAllAsync();
+            FranchiseOptions = franchises
+                .Where(f => !f.IsDeleted)
+                .Select(f => new SelectListItem
+                {
+                    Value = f.Id.ToString(),
+                    Text = f.Name
+                })
+                .OrderBy(f => f.Text)
+                .ToList();
+            FranchiseOptions.Insert(0, new SelectListItem
+            {
+                Value = "",
+                Text = "All Franchises",
+                Selected = !Query.FranchiseId.HasValue  
+            });
+        }
+        public bool HasActiveFilters()
+        {
+            return Query?.HasFilters() ?? false;
+        }
     }
 }

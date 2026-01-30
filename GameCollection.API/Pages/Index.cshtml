@@ -33,87 +33,77 @@
     </div>
 </div>
 
-@if (Model.RecentGames.Any())
+@if (Model.RecentTopRatedGames.Any())
 {
     <section class="mb-5">
         <div class="container">
-            <h2 class="mb-4">Recently Released Games</h2>
+            <h2 class="mb-4">
+                Top Rated Games of @Model.CurrentYear
+                <small class="text-muted fs-6">(Current Year)</small>
+            </h2>
+            @if (!Model.RecentTopRatedGames.Any())
+            {
+                <div class="alert alert-info">
+                    No top-rated games released this year yet.
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    @foreach (var game in Model.RecentTopRatedGames)
+                    {
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card game-card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <h5 class="card-title mb-1">@game.Title</h5>
+                                        <span class="badge current-year-badge">@game.MetacriticScore/100</span>
+                                    </div>
+                                    <p class="card-text">
+                                        <small class="text-muted">
+                                            Released: @game.ReleaseYear
+                                            @if (!string.IsNullOrEmpty(game.Developer))
+                                            {
+                                                <text> | @game.Developer</text>
+                                            }
+                                            @if (!string.IsNullOrEmpty(game.Publisher))
+                                            {
+                                                <text> | @game.Publisher</text>
+                                            }
+                                        </small>
+                                    </p>
+                                    <!-- ... κώδικας για platforms ... -->
+                                    <a href="/Games/Details/@game.Id" class="stretched-link"></a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+}
+
+@if (Model.AllTimeTopRatedGames.Any())
+{
+    <section class="mb-5">
+        <div class="container">
+            <h2 class="mb-4">All-Time Top Rated Games</h2>
             <div class="row">
-                @foreach (var game in Model.RecentGames)
+                @foreach (var game in Model.AllTimeTopRatedGames)
                 {
                     <div class="col-md-4 col-lg-2 mb-3">
                         <div class="card game-card h-100">
                             <div class="card-body">
                                 <h6 class="card-title">@game.Title</h6>
                                 <small class="text-muted">@game.ReleaseYear</small>
-
-                                @if (game.MetacriticScore.HasValue)
-                                {
-                                    <div class="mt-2">
-                                        @{
-                                            var scoreClass = game.MetacriticScore >= 75 ? "metacritic-high" :
-                                            game.MetacriticScore >= 50 ? "metacritic-medium" :
-                                            "metacritic-low";
-                                        }
-                                        <span class="metacritic-badge @scoreClass">
-                                            @game.MetacriticScore
-                                        </span>
-                                    </div>
-                                }
-
-                                <a href="/Games/Details/@game.Id" class="stretched-link"></a>
-                            </div>
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
-    </section>
-}
-
-@if (Model.TopRatedGames.Any())
-{
-    <section class="mb-5">
-        <div class="container">
-            <h2 class="mb-4">Top Rated Games</h2>
-            <div class="row">
-                @foreach (var game in Model.TopRatedGames)
-                {
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card game-card h-100">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start">
-                                    <h5 class="card-title mb-1">@game.Title</h5>
-                                    @if (game.MetacriticScore.HasValue)
-                                    {
-                                        <span class="badge bg-primary">@game.MetacriticScore/100</span>
+                                <div class="mt-2">
+                                    @{
+                                        var scoreClass = game.MetacriticScore >= 75 ? "metacritic-high" :
+                                        game.MetacriticScore >= 50 ? "metacritic-medium" : "metacritic-low";
                                     }
+                                    <span class="badge all-time-badge">@game.MetacriticScore</span>
                                 </div>
-
-                                <p class="card-text">
-                                    <small class="text-muted">
-                                        @game.ReleaseYear |
-                                        @if (!string.IsNullOrEmpty(game.Developer))
-                                        {
-                                            @game.Developer
-                                        }
-                                    </small>
-                                </p>
-
-                                @if (game.Platforms.Any())
-                                {
-                                    <div class="mt-2">
-                                        @foreach (var platform in game.Platforms.Take(3))
-                                        {
-                                            <span class="badge bg-light text-dark me-1">@platform</span>
-                                        }
-                                        @if (game.Platforms.Count > 3)
-                                        {
-                                            <span class="badge bg-light text-dark">+@(game.Platforms.Count - 3)</span>
-                                        }
-                                    </div>
-                                }
-
                                 <a href="/Games/Details/@game.Id" class="stretched-link"></a>
                             </div>
                         </div>

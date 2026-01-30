@@ -51,4 +51,14 @@ namespace GameCollection.Application.DTOs
         public List<int>? GenreIds { get; set; }
         public int? FranchiseId { get; set; }
     }
+
+    public class GamePagedResultDto
+    {
+        public List<GameDto> Games { get; set; } = new();
+        public int TotalCount { get; set; }
+        public int PageNumber { get; set; }
+        public int PageSize { get; set; }
+        public int TotalPages => PageSize > 0 ? (int)Math.Ceiling((double)TotalCount / PageSize) : 0;
+
+    }
 }

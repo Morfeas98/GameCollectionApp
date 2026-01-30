@@ -1,5 +1,4 @@
-﻿@* Pages/Games/Index.cshtml *@
-@page "{handler?}"
+﻿@page
 @model GameCollection.API.Pages.Games.IndexModel
 
 @{
@@ -15,23 +14,25 @@
                     <div class="input-group">
                         <input type="text" 
                                class="form-control form-control-lg" 
-                               name="search" 
-                               value="@Model.SearchQuery"
+                               asp-for="Query.SearchQuery"
                                placeholder="Search games by title, developer, description...">
                         <button class="btn btn-primary" type="submit">
                             <i class="bi bi-search"></i> Search
                         </button>
-                        <a href="/Games" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-circle"></i> Clear
-                        </a>
+                        @if (Model.HasActiveFilters())
+                        {
+                            <a href="/Games" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Clear All Filters
+                            </a>
+                        }
                     </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Filters -->
     <div class="row mb-4">
+        <!-- Filters Sidebar -->
         <div class="col-md-3">
             <div class="card">
                 <div class="card-header">
@@ -42,24 +43,21 @@
                         <!-- Platform Filter -->
                         <div class="mb-3">
                             <label class="form-label">Platform</label>
-                            <select class="form-select" name="platformId" asp-for="PlatformId">
-                                <option value="">All Platforms</option>
-                                <!-- TODO: Populate with actual platforms -->
-                                <option value="1">PC</option>
-                                <option value="2">PlayStation 5</option>
-                                <option value="3">Xbox Series X</option>
+                            <select class="form-select" asp-for="Query.PlatformId" asp-items="Model.PlatformOptions">
                             </select>
                         </div>
                         
                         <!-- Genre Filter -->
                         <div class="mb-3">
                             <label class="form-label">Genre</label>
-                            <select class="form-select" name="genreId" asp-for="GenreId">
-                                <option value="">All Genres</option>
-                                <!-- TODO: Populate with actual genres -->
-                                <option value="1">Action</option>
-                                <option value="2">Adventure</option>
-                                <option value="3">RPG</option>
+                            <select class="form-select" asp-for="Query.GenreId" asp-items="Model.GenreOptions">
+                            </select>
+                        </div>
+                        
+                        <!-- Franchise Filter -->
+                        <div class="mb-3">
+                            <label class="form-label">Franchise</label>
+                            <select class="form-select" asp-for="Query.FranchiseId" asp-items="Model.FranchiseOptions">
                             </select>
                         </div>
                         
@@ -70,20 +68,18 @@
                                 <div class="col-6">
                                     <input type="number" 
                                            class="form-control" 
-                                           name="minYear" 
+                                           asp-for="Query.MinYear"
                                            placeholder="From"
                                            min="1950"
-                                           max="@DateTime.Now.Year"
-                                           asp-for="MinYear">
+                                           max="@DateTime.Now.Year + 2">
                                 </div>
                                 <div class="col-6">
                                     <input type="number" 
                                            class="form-control" 
-                                           name="maxYear" 
+                                           asp-for="Query.MaxYear"
                                            placeholder="To"
                                            min="1950"
-                                           max="@DateTime.Now.Year + 2"
-                                           asp-for="MaxYear">
+                                           max="@DateTime.Now.Year + 2">
                                 </div>
                             </div>
                         </div>
@@ -91,51 +87,106 @@
                         <!-- Sort -->
                         <div class="mb-3">
                             <label class="form-label">Sort By</label>
-                            <select class="form-select" name="sort" asp-for="SortBy">
-                                <option value="title">Title (A-Z)</option>
+                            <select class="form-select" asp-for="Query.SortBy">
+                                <option value="title_asc">Title (A-Z)</option>
                                 <option value="title_desc">Title (Z-A)</option>
-                                <option value="year">Year (Oldest First)</option>
+                                <option value="year_asc">Year (Oldest First)</option>
                                 <option value="year_desc">Year (Newest First)</option>
-                                <option value="rating">Metacritic (Highest First)</option>
-                                <option value="rating_desc">Metacritic (Lowest First)</option>
+                                <option value="rating_asc">Metacritic (Lowest First)</option>
+                                <option value="rating_desc">Metacritic (Highest First)</option>
                             </select>
                         </div>
+                        
+                        <!-- Hidden fields για pagination -->
+                        <input type="hidden" asp-for="Query.PageNumber" value="1" />
+                        <input type="hidden" asp-for="Query.PageSize" value="12" />
                         
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-funnel"></i> Apply Filters
                             </button>
-                            <a href="/Games" class="btn btn-outline-secondary">
-                                <i class="bi bi-arrow-clockwise"></i> Reset
-                            </a>
+                            @if (Model.HasActiveFilters())
+                            {
+                                <a href="/Games" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-clockwise"></i> Reset Filters
+                                </a>
+                            }
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-
+    
         <!-- Games Grid -->
         <div class="col-md-9">
-            <!-- Results Info -->
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                    <h4 class="mb-0">Games</h4>
-                    <small class="text-muted">
-                        Showing @((Model.PageNumber - 1) * Model.PageSize + 1)-@Math.Min(Model.PageNumber * Model.PageSize, Model.TotalCount) 
-                        of @Model.TotalCount games
-                    </small>
-                </div>
-                <div>
-                    <a href="/Games/Create" class="btn btn-success">
-                        <i class="bi bi-plus-circle"></i> Add Game
-                    </a>
-                </div>
-            </div>
-
-            @if (Model.Games.Any())
+            @if (Model.GameResult != null && Model.GameResult.Games.Any())
             {
+                <!-- Results Info with active filters -->
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h4 class="mb-0">Games</h4>
+                        <small class="text-muted">
+                            Showing @((Model.GameResult.PageNumber - 1) * Model.GameResult.PageSize + 1)-@Math.Min(Model.GameResult.PageNumber * Model.GameResult.PageSize, Model.GameResult.TotalCount)
+                            of @Model.GameResult.TotalCount games
+                            @if (Model.HasActiveFilters())
+                            {
+                                <span class="ms-2">
+                                    <i class="bi bi-funnel text-primary"></i>
+                                    <small>Filtered</small>
+                                </span>
+                            }
+                        </small>
+
+                        <!-- Active filters badges -->
+                        @if (Model.HasActiveFilters())
+                        {
+                            <div class="mt-2">
+                                @if (!string.IsNullOrEmpty(Model.Query.SearchQuery))
+                                {
+                                    <span class="badge bg-info me-1 mb-1">
+                                        Search: "@Model.Query.SearchQuery"
+                                    </span>
+                                }
+                                @if (Model.Query.PlatformId.HasValue)
+                                {
+                                    <span class="badge bg-secondary me-1 mb-1">
+                                        Platform: @Model.PlatformOptions.FirstOrDefault(p => p.Value == Model.Query.PlatformId.ToString())?.Text
+                                    </span>
+                                }
+                                @if (Model.Query.GenreId.HasValue)
+                                {
+                                    <span class="badge bg-secondary me-1 mb-1">
+                                        Genre: @Model.GenreOptions.FirstOrDefault(g => g.Value == Model.Query.GenreId.ToString())?.Text
+                                    </span>
+                                }
+                                @if (Model.Query.FranchiseId.HasValue)
+                                {
+                                    <span class="badge bg-secondary me-1 mb-1">
+                                        Franchise: @Model.FranchiseOptions.FirstOrDefault(f => f.Value == Model.Query.FranchiseId.ToString())?.Text
+                                    </span>
+                                }
+                                @if (Model.Query.MinYear.HasValue || Model.Query.MaxYear.HasValue)
+                                {
+                                    <span class="badge bg-secondary me-1 mb-1">
+                                        Year: @(Model.Query.MinYear?.ToString() ?? "Any") - @(Model.Query.MaxYear?.ToString() ?? "Any")
+                                    </span>
+                                }
+                                <span class="badge bg-light text-dark me-1 mb-1">
+                                    Sort: @Model.Query.GetSortDisplayName()
+                                </span>
+                            </div>
+                        }
+                    </div>
+                    <div>
+                        <a href="/Games/Create" class="btn btn-success">
+                            <i class="bi bi-plus-circle"></i> Add Game
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Games Grid -->
                 <div class="row">
-                    @foreach (var game in Model.Games)
+                    @foreach (var game in Model.GameResult.Games)
                     {
                         <div class="col-lg-4 col-md-6 mb-4">
                             <div class="card game-card h-100">
@@ -145,8 +196,8 @@
                                         @if (game.MetacriticScore.HasValue)
                                         {
                                             var scoreClass = game.MetacriticScore >= 75 ? "metacritic-high" :
-                                                                 game.MetacriticScore >= 50 ? "metacritic-medium" :
-                                                                 "metacritic-low";
+                                                             game.MetacriticScore >= 50 ? "metacritic-medium" :
+                                                             "metacritic-low";
                                             
                                             <span class="metacritic-badge @scoreClass">
                                                 @game.MetacriticScore
@@ -160,6 +211,10 @@
                                             @if (!string.IsNullOrEmpty(game.Developer))
                                             {
                                                 @game.Developer
+                                            } |
+                                            @if (!string.IsNullOrEmpty(game.Publisher))
+                                            {
+                                                @game.Publisher
                                             }
                                         </small>
                                     </p>
@@ -175,7 +230,7 @@
                                         <p class="card-text small">@game.Description</p>
                                     }
                                     
-                                    @if (game.Platforms.Any())
+                                    @if (game.Platforms != null && game.Platforms.Any())
                                     {
                                         <div class="mt-2">
                                             @foreach (var platform in game.Platforms.Take(3))
@@ -189,7 +244,7 @@
                                         </div>
                                     }
                                     
-                                    @if (game.Genres.Any())
+                                    @if (game.Genres != null && game.Genres.Any())
                                     {
                                         <div class="mt-2">
                                             @foreach (var genre in game.Genres.Take(2))
@@ -215,32 +270,59 @@
                 </div>
 
                 <!-- Pagination -->
-                @if (Model.TotalCount > Model.PageSize)
+                @if (Model.GameResult.TotalPages > 1)
                 {
+                    
+                        // Helper function για pagination URLs
+                        string BuildPageUrl(int pageNum)
+                        {
+                            var queryParams = new Dictionary<string, string?>
+                            {
+                                ["Query.SearchQuery"] = Model.Query.SearchQuery,
+                                ["Query.PlatformId"] = Model.Query.PlatformId?.ToString(),
+                                ["Query.GenreId"] = Model.Query.GenreId?.ToString(),
+                                ["Query.FranchiseId"] = Model.Query.FranchiseId?.ToString(),
+                                ["Query.MinYear"] = Model.Query.MinYear?.ToString(),
+                                ["Query.MaxYear"] = Model.Query.MaxYear?.ToString(),
+                                ["Query.SortBy"] = Model.Query.SortBy,
+                                ["Query.PageNumber"] = pageNum.ToString(),
+                                ["Query.PageSize"] = Model.Query.PageSize.ToString()
+                            };
+                            
+                            var queryString = string.Join("&", 
+                                queryParams.Where(kv => !string.IsNullOrEmpty(kv.Value))
+                                           .Select(kv => $"{kv.Key}={Uri.EscapeDataString(kv.Value!)}"));
+                            
+                            return $"/Games?{queryString}";
+                        }
+                    
+                
+                    
                     <nav aria-label="Page navigation">
                         <ul class="pagination justify-content-center">
-                            @if (Model.PageNumber > 1)
+                            <!-- Previous Button -->
+                            @if (Model.GameResult.PageNumber > 1)
                             {
                                 <li class="page-item">
-                                    <a class="page-link" href="/Games?page=@(Model.PageNumber - 1)&search=@Model.SearchQuery">
+                                    <a class="page-link" href="@BuildPageUrl(Model.GameResult.PageNumber - 1)">
                                         Previous
                                     </a>
                                 </li>
                             }
                             
-                            @for (int i = 1; i <= Math.Ceiling((double)Model.TotalCount / Model.PageSize); i++)
+                            <!-- Page Numbers -->
+                            @for (int i = 1; i <= Model.GameResult.TotalPages; i++)
                             {
-                                <li class="page-item @(i == Model.PageNumber ? "active" : "")">
-                                    <a class="page-link" href="/Games?page=@i&search=@Model.SearchQuery">
-                                        @i
-                                    </a>
+                                <li class="page-item @(i == Model.GameResult.PageNumber ? "active" : "")">
+                                    <a class="page-link" href="@BuildPageUrl(i)">@i</a>
                                 </li>
                             }
                             
-                            @if (Model.PageNumber < Math.Ceiling((double)Model.TotalCount / Model.PageSize))
+                            <!-- Next Button -->
+                            @if (Model.GameResult.PageNumber < Model.GameResult.TotalPages)
                             {
                                 <li class="page-item">
-                                    <a class="page-link" href="/Games?page=@(Model.PageNumber + 1)&search=@Model.SearchQuery">
+                                    <a class="page-link" href="@BuildPageUrl(Model.GameResult.PageNumber + 1)">
                                         Next
                                     </a>
                                 </li>
@@ -251,11 +333,15 @@
             }
             else
             {
+                <!-- No results message -->
                 <div class="text-center py-5">
                     <i class="bi bi-emoji-frown display-1 text-muted mb-3"></i>
                     <h4>No games found</h4>
                     <p class="text-muted">
-                        @if (!string.IsNullOrEmpty(Model.SearchQuery))
+                        @if (!string.IsNullOrEmpty(Model.Query.SearchQuery) || 
+                             Model.Query.PlatformId.HasValue || 
+                             Model.Query.GenreId.HasValue ||
+                             Model.Query.FranchiseId.HasValue)
                         {
                             <span>No games match your search criteria.</span>
                         }
@@ -272,3 +358,41 @@
         </div>
     </div>
 </div>
+
+<style>
+    .metacritic-badge {
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-weight: bold;
+        font-size: 0.875rem;
+    }
+    
+    .metacritic-high {
+        background-color: #6c3;
+        color: white;
+    }
+    
+    .metacritic-medium {
+        background-color: #fc3;
+        color: #333;
+    }
+    
+    .metacritic-low {
+        background-color: #f00;
+        color: white;
+    }
+    
+    .game-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .game-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    
+    .pagination .page-item.active .page-link {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+    }
+</style>

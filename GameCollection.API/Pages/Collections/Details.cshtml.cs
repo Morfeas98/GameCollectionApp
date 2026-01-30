@@ -53,7 +53,10 @@ namespace GameCollection.API.Pages.Collections
             }
 
             var collectionEntity = await _context.GameCollections
+                .Include(c => c.CollectionGames)
+                    .ThenInclude(cg => cg.Game)
                 .FirstOrDefaultAsync(c => c.Id == id);
+
             IsOwner = collectionEntity?.UserId == userId;
 
             await LoadAllGamesAsync();

@@ -9,8 +9,9 @@ namespace GameCollection.API.Pages
     {
         private readonly IGameService _gameService;
 
-        public List<GameDto> RecentGames { get; set; } = new();
-        public List<GameDto> TopRatedGames { get; set; } = new();
+        public List<GameDto> RecentTopRatedGames { get; set; } = new();
+        public List<GameDto> AllTimeTopRatedGames { get; set; } = new();
+        public int CurrentYear { get; set; }
 
         public IndexModel(IGameService gameService)
         {
@@ -19,20 +20,9 @@ namespace GameCollection.API.Pages
 
         public async Task OnGetAsync()
         {
-            var allGames = await _gameService.GetAllGamesAsync();
-
-            // Recent games (last 6 months)
-            RecentGames = allGames
-                .Where(g => g.ReleaseYear >= DateTime.Now.Year - 1)
-                .Take(6)
-                .ToList();
-
-            // Top rated games
-            TopRatedGames = allGames
-                .Where(g => g.MetacriticScore.HasValue)
-                .OrderByDescending(g => g.MetacriticScore)
-                .Take(6)
-                .ToList();
+            CurrentYear = DateTime.UtcNow.Year;
+            RecentTopRatedGames = await _gameService.GetRecentTopRatedGamesAsync(6);
+            AllTimeTopRatedGames = await _gameService.GetTopRatedGamesAsync(6);
         }
     }
 }

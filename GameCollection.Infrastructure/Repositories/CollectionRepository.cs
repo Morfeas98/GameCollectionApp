@@ -47,7 +47,13 @@ namespace GameCollection.Infrastructure.Repositories
                 .AnyAsync(c => c.Id == collectionId && c.UserId == userId && !c.IsDeleted);
         }
 
-        public async Task AddGameToCollectionAsync(int collectionId, int gameId, int? personalRating, string? personalNotes)
+        public async Task AddGameToCollectionAsync(
+            int collectionId,
+            int gameId,
+            int? personalRating,
+            string? personalNotes,
+            bool completed = false,
+            bool currentlyPlaying = false)
         {
             // Check if Existing
             var existing = await _context.CollectionGames
@@ -63,6 +69,8 @@ namespace GameCollection.Infrastructure.Repositories
                 DateAdded = DateTime.UtcNow,
                 PersonalRating = personalRating,
                 PersonalNotes = personalNotes,
+                Completed = completed,
+                CurrentlyPlaying = currentlyPlaying,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -76,9 +84,11 @@ namespace GameCollection.Infrastructure.Repositories
 
             if (collectionGame != null)
             {
-                collectionGame.IsDeleted = true;
-                collectionGame.UpdatedAt = DateTime.UtcNow;
-                _context.CollectionGames.Update(collectionGame);
+                //collectionGame.IsDeleted = true;
+                //collectionGame.UpdatedAt = DateTime.UtcNow;
+                //_context.CollectionGames.Update(collectionGame);
+
+                _context.CollectionGames.Remove(collectionGame);
             }
         }
 
@@ -174,6 +184,37 @@ namespace GameCollection.Infrastructure.Repositories
                 .OrderByDescending(cg => cg.UpdatedAt ?? cg.CreatedAt)
                 .Select(cg => cg.UpdatedAt ?? cg.CreatedAt)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<CollectionGame?> GetUserGameAsync(int userId, int gameId)
+        {
+            return await _context.CollectionGames
+                .Include(cg => cg.Collection)
+                .Include(cg => cg.Game)
+                .FirstOrDefaultAsync(cg =>
+                        cg.Collection.UserId == userId &&
+                        cg.GameId == gameId);
+        }
+
+        public async Task<IEnumerable<GameCollection.Domain.Entities.GameCollection>> GetCollectionsContainingGameAsync(int userId, int gameId)
+        {
+            return await _context.GameCollections
+                .Include(gc => gc.User)
+                .Include(gc => gc.CollectionGames)
+                    .ThenInclude(cg => cg.Game)
+                .Where(gc =>
+                    gc.UserId == userId &&
+                    gc.CollectionGames.Any(cg => cg.GameId == gameId))
+                .ToListAsync();
+        }
+
+        public async Task<bool> IsGameInUserCollectionAsync(int userId, int gameId)
+        {
+            return await _context.CollectionGames
+                .Include(cg => cg.Collection)
+                .AnyAsync(cg =>
+                    cg.Collection.UserId == userId &&
+                    cg.GameId == gameId);
         }
     }
 }

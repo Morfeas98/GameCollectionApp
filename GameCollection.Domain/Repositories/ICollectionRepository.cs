@@ -13,7 +13,7 @@ namespace GameCollection.Domain.Repositories
         Task<IEnumerable<GameCollection.Domain.Entities.GameCollection>> GetUserCollectionsAsync(int userId);
         Task<GameCollection.Domain.Entities.GameCollection> GetCollectionWithGamesAsync(int collectionId);
         Task<bool> CollectionBelongsToUserAsync(int collectionId, int userID);
-        Task AddGameToCollectionAsync(int collectionId, int gameId, int? personalRating, string? personalNotes);
+        Task AddGameToCollectionAsync(int collectionId, int gameId, int? personalRating, string? personalNotes, bool completed = false, bool currentlyPlaying = false);
         Task RemoveGameFromCollectionAsync(int collectionId, int gameId);
         Task<IEnumerable<Game>> GetCollectionGamesAsync(int collectionId);
         Task<CollectionGame> GetCollectionGameAsync(int collectionId, int gameId);
@@ -24,5 +24,8 @@ namespace GameCollection.Domain.Repositories
         Task<int> GetUserCurrentlyPlayingCountAsync(int userId);
         Task<double> GetUserAverageRatingAsync(int userId);
         Task<DateTime?> GetUserLastActivityAsync(int userId);
+        Task<CollectionGame?> GetUserGameAsync(int userId, int gameId);
+        Task<IEnumerable<GameCollection.Domain.Entities.GameCollection>> GetCollectionsContainingGameAsync(int userId, int gameId);
+        Task<bool> IsGameInUserCollectionAsync(int userId, int gameId);
     }
 }

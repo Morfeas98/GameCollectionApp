@@ -45,6 +45,8 @@ namespace GameCollection.Application.DTOs
         public string? PersonalNotes { get; set; }
         public bool Completed { get; set; }
         public bool CurrentlyPlaying { get; set; }
+        public int? CollectionId { get; set; }
+        public string CollectionName { get; set; } = string.Empty;
     }
 
     public class AddGameToCollectionDto
@@ -57,5 +59,7 @@ namespace GameCollection.Application.DTOs
 
         [MaxLength(1000, ErrorMessage = "Notes cannot exceed 1000 characters")]
         public string? PersonalNotes { get; set; }
+        public bool Completed { get; set; }
+        public bool CurrentlyPlaying { get; set; }
     }
 }

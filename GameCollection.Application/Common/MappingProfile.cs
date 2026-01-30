@@ -36,11 +36,22 @@ namespace GameCollection.Application.Common
 
             CreateMap<GameCollection.Domain.Entities.GameCollection, CollectionDto>()
                 .ForMember(dest => dest.GameCount,
-                    opt => opt.MapFrom(src => src.CollectionGames.Count(cg => !cg.IsDeleted)));
+                    opt => opt.MapFrom(src => src.CollectionGames.Count(cg => !cg.IsDeleted)))
+                .ForMember(dest => dest.Games,
+                    opt => opt.MapFrom(src => src.CollectionGames.Where(cg => !cg.IsDeleted)));
 
             CreateMap<CollectionGame, CollectionGameDto>()
                 .ForMember(dest => dest.GameTitle,
-                    opt => opt.MapFrom(src => src.Game.Title));
+                    opt => opt.MapFrom(src => src.Game.Title))
+                .ForMember(dest => dest.CollectionId,
+                    opt => opt.MapFrom(src => src.Collection.Id))
+                .ForMember(dest => dest.CollectionName,
+                    opt => opt.MapFrom(src => src.Collection.Name))
+                .ForMember(dest => dest.Completed,
+                    opt => opt.MapFrom(src => src.Completed))
+                .ForMember(dest => dest.CurrentlyPlaying,
+                    opt => opt.MapFrom(src => src.CurrentlyPlaying));
+
         }
     }
 }

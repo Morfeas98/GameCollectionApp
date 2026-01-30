@@ -17,5 +17,9 @@ namespace GameCollection.Application.Services
         Task<bool> AddGameToCollectionAsync(int collectionId, AddGameToCollectionDto addGameDto, int userId);
         Task<bool> RemoveGameFromCollectionAsync(int collectionId, int gameId, int userId);
         Task<bool> UpdateGameInCollectionAsync(int collectionId, int gameId, AddGameToCollectionDto updateDto, int userId);
+        Task<CollectionGameDto?> GetUserGameAsync(int userId, int gameId);
+        Task<IEnumerable<CollectionDto>> GetCollectionsContainingGameAsync(int userId, int gameId);
+        Task<bool> IsGameInUserCollectionAsync(int userId, int gameId);
+        Task<CollectionGameDto?> GetCollectionGameDetailsAsync(int userId, int gameId, int collectionId);
     }
 }

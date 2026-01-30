@@ -16,5 +16,16 @@ namespace GameCollection.Domain.Repositories
         Task<IEnumerable<Game>> GetGamesByPlatformAsync(int platformId);
         Task<IEnumerable<Game>> GetGamesByGenreAsync(int genreId);
         Task<IEnumerable<Game>> GetGamesByFranchiseAsync(int franchiseId);
+        Task<(IEnumerable<Game> Games, int TotalCount)> GetFilteredGamesAsync(
+            string? searchTerm = null,
+            int? platformId = null,
+            int? genreId = null,
+            int? franchiseId = null,
+            int? minYear = null,
+            int? maxYear = null,
+            string sortBy = "title_asc",
+            int pageNumber = 1,
+            int pageSize = 12,
+            bool includeDeleted = false);
     }
 }
