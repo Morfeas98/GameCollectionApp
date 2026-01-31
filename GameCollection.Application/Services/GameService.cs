@@ -304,7 +304,7 @@ namespace GameCollection.Application.Services
             var games = await _gameRepository.GetAllAsync();
 
             return games
-                .Where(g => g.ReleaseYear == currentYear && g.MetacriticScore.HasValue)
+                .Where(g => g.ReleaseYear == currentYear && g.MetacriticScore.HasValue && !g.IsDeleted)
                 .OrderByDescending(g => g.MetacriticScore)
                 .Take(count)
                 .Select(g => _mapper.Map<GameDto>(g))
@@ -319,7 +319,7 @@ namespace GameCollection.Application.Services
             var games = await _gameRepository.GetAllAsync();
 
             return games
-                .Where(g => g.MetacriticScore.HasValue && !recentTopRatedIds.Contains(g.Id))
+                .Where(g => g.MetacriticScore.HasValue && !g.IsDeleted && !recentTopRatedIds.Contains(g.Id))
                 .OrderByDescending(g => g.MetacriticScore)
                 .Take(count)
                 .Select(g => _mapper.Map<GameDto>(g))
