@@ -16,7 +16,7 @@ A professional video game collection management system built with **ASP.NET Core
 - [Architecture](#%EF%B8%8F-architecture)
 - [Project Structure](#-project-structure)
 - [Authentication & Authorization](#-authentication--authorization)
-- [API Endpoints](#%EF%B8%8F-api-endpoints)
+- [API Endpoints & Future Development](#%EF%B8%8F-api-endpoints--future-development)
 
 ---
 
@@ -98,7 +98,6 @@ dotnet run
 - **Backend**: ASP.NET Core 9.0, Entity Framework Core, SQL Server 
 - **Frontend**: Razor Pages, Bootstrap 5, JavaScript, jQuery 
 - **Authentication**: ASP.NET Core Identity with Cookie Authentication 
-- **API**: RESTful API endpoints for AJAX operations 
 - **Mapping**: AutoMapper for DTO transformations 
 
 ### Design Patterns
@@ -131,9 +130,10 @@ GameCollectionApp/
 
 ---
 
-## 🛠️ API Endpoints
-The application includes a RESTful API for AJAX operations: 
+## 🛠️ API Endpoints & Future Development
+**Note:** The project was originally intended to have a React frontend. Due to time constraints, the current implementation uses **Razor Pages**.
 
+The application includes a RESTful API for AJAX operations for future user: 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | **GET** | `/api/games` | Get all games |
