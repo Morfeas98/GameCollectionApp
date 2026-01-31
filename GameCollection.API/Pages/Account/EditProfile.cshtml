@@ -1,0 +1,137 @@
+﻿@page
+@model GameCollection.API.Pages.Account.EditProfileModel
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/Account/Profile">Profile</a></li>
+                    <li class="breadcrumb-item active">Edit Profile</li>
+                </ol>
+            </nav>
+
+            <!-- Header -->
+            <div class="d-flex align-items-center mb-4">
+                <h2 class="mb-0">Edit Profile</h2>
+                <a href="/Account/Profile" class="btn btn-outline-secondary ms-auto">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Profile
+                </a>
+            </div>
+
+            <!-- Messages -->
+            @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @Model.SuccessMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @Model.ErrorMessage
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <!-- Profile Form -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Profile Information</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        <div class="mb-3">
+                            <label asp-for="UpdateProfile.Username" class="form-label">Username</label>
+                            <input asp-for="UpdateProfile.Username" class="form-control" />
+                            <span asp-validation-for="UpdateProfile.Username" class="text-danger"></span>
+                            <div class="form-text">
+                                Choose a unique username (3-50 characters)
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="UpdateProfile.Email" class="form-label">Email Address</label>
+                            <input asp-for="UpdateProfile.Email" class="form-control" type="email" />
+                            <span asp-validation-for="UpdateProfile.Email" class="text-danger"></span>
+                            <div class="form-text">
+                                We'll use this email for notifications and account recovery
+                            </div>
+                        </div>
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <!-- Current Info (Readonly) -->
+                        @if (Model.CurrentProfile != null)
+                        {
+                            <div class="card bg-light mb-4">
+                                <div class="card-header">
+                                    <h6 class="mb-0">Current Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <small class="text-muted">Current Username:</small>
+                                            <p class="mb-2">@Model.CurrentProfile.Username</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted">Current Email:</small>
+                                            <p class="mb-2">@Model.CurrentProfile.Email</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted">Member Since:</small>
+                                            <p class="mb-0">@Model.CurrentProfile.CreatedAt.ToString("dd MMM yyyy")</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <small class="text-muted">Role:</small>
+                                            <p class="mb-0">@Model.CurrentProfile.Role</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Form Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="/Account/Profile" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-1"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-1"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Security Note -->
+            <div class="alert alert-info mt-3">
+                <h6 class="alert-heading"><i class="bi bi-shield-check me-2"></i>Security Note</h6>
+                <p class="mb-0">
+                    Changing your profile information will update how you appear in the application.
+                    You will need to log in again if you change your email address.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <script>
+        setTimeout(function() {
+            window.location.reload(true);
+        }, 1500); // 1.5 δευτερόλεπτα
+    </script>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

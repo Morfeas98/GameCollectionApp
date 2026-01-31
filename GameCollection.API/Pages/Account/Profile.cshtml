@@ -40,12 +40,12 @@
                     </p>
 
                     <div class="d-grid gap-2">
-                        <button class="btn btn-outline-primary">
+                        <a href="/Account/EditProfile" class="btn btn-outline-primary">
                             <i class="bi bi-pencil me-2"></i>Edit Profile
-                        </button>
-                        <button class="btn btn-outline-secondary">
-                            <i class="bi bi-gear me-2"></i>Settings
-                        </button>
+                        </a>
+                        <a href="/Account/ChangePassword" class="btn btn-outline-secondary">
+                            <i class="bi bi-key me-2"></i>Change Password
+                        </a>
                     </div>
                 </div>
             </div>
@@ -107,28 +107,123 @@
                     <h5 class="mb-0">Recent Activity</h5>
                 </div>
                 <div class="card-body">
-                    <div class="text-center py-3">
-                        <i class="bi bi-activity display-6 text-muted mb-3"></i>
-                        <h5>No Recent Activity</h5>
-                        <p class="text-muted">Your activity will appear here as you use the app.</p>
-                        <a href="/Games" class="btn btn-outline-primary">
-                            <i class="bi bi-search me-2"></i>Browse Games
-                        </a>
-                    </div>
+                    @if (Model.RecentActivities.Any())
+                    {
+                        <div class="list-group list-group-flush">
+                            @foreach (var activity in Model.RecentActivities)
+                            {
+                                <div class="list-group-item border-0 px-0 py-3">
+                                    <div class="d-flex align-items-start">
+                                        <div class="flex-shrink-0">
+                                            <div class="@GetBadgeBgClass(activity.BadgeColor) rounded-circle p-2">
+                                                <i class="bi @activity.IconClass @GetTextColorClass(activity.BadgeColor) fs-5"></i>
+                                            </div>
+                                        </div>
+                                        <div class="flex-grow-1 ms-3">
+                                            <h6 class="mb-1">@activity.Description</h6>
+                                            @if (!string.IsNullOrEmpty(activity.NotePreview))
+                                            {
+                                                <p class="mb-1 small text-muted">"@activity.NotePreview"</p>
+                                            }
+                                            @if (activity.Rating.HasValue)
+                                            {
+                                                <div class="text-warning small mb-1">
+                                                    @for (int i = 1; i <= 5; i++)
+                                                    {
+                                                        <i class="bi @(i <= Math.Round(activity.Rating.Value / 2.0) ? "bi-star-fill" : "bi-star")"></i>
+                                                    }
+                                                    <span class="text-muted ms-1">(@activity.Rating.Value/10)</span>
+                                                </div>
+                                            }
+                                            <small class="text-muted">
+                                                <i class="bi bi-clock me-1"></i>
+                                                @activity.Timestamp.ToString("dd MMM yyyy, HH:mm")
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="bi bi-activity display-6 text-muted mb-3"></i>
+                            <h5>No Recent Activity</h5>
+                            <p class="text-muted mb-4">Your activity will appear here as you use the app.</p>
+                            <div class="d-flex justify-content-center gap-3">
+                                <a href="/Games" class="btn btn-outline-primary">
+                                    <i class="bi bi-search me-2"></i>Browse Games
+                                </a>
+                                <a href="/Collections" class="btn btn-outline-success">
+                                    <i class="bi bi-plus-circle me-2"></i>Create Collection
+                                </a>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
 
             <!-- Quick Links -->
             <div class="row">
+                <!-- My Collections Card (Updated) -->
                 <div class="col-md-6 mb-4">
                     <div class="card h-100">
                         <div class="card-body text-center">
                             <i class="bi bi-collection display-4 text-primary mb-3"></i>
                             <h5>My Collections</h5>
                             <p class="card-text">View and manage all your game collections.</p>
-                            <a href="/Collections" class="btn btn-outline-primary w-100">
-                                Go to Collections
-                            </a>
+
+                            @if (Model.RecentCollections.Any())
+                            {
+                                <div class="mt-3 text-start">
+                                    <h6 class="border-bottom pb-2 mb-3">Recent Collections:</h6>
+                                    @foreach (var collection in Model.RecentCollections)
+                                    {
+                                        <div class="mb-3 pb-2 border-bottom">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <a href="/Collections/View/@collection.Id"
+                                                   class="text-decoration-none text-dark fw-bold mb-1">
+                                                    @collection.Name
+                                                </a>
+                                                <span class="badge bg-primary rounded-pill">@collection.GameCount</span>
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(collection.Description))
+                                            {
+                                                <p class="mb-0 small text-muted mt-1">
+                                                    @if (collection.Description.Length > 60)
+                                                    {
+                                                        @collection.Description.Substring(0, 60)
+                                                        <text>...</text>
+                                                    }
+                                                    else
+                                                    {
+                                                        @collection.Description
+                                                    }
+                                                </p>
+                                            }
+                                            <small class="text-muted d-block mt-1">
+                                                <i class="bi bi-calendar3 me-1"></i>
+                                                Created @collection.CreatedAt.ToString("dd MMM yyyy")
+                                            </small>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="mt-4">
+                                    <i class="bi bi-inbox display-6 text-muted mb-3"></i>
+                                    <p class="text-muted">No collections yet.</p>
+                                    <p class="small text-muted">Start by creating your first collection!</p>
+                                </div>
+                            }
+
+                            <div class="mt-3 d-grid gap-2">
+                                <a href="/Collections" class="btn btn-outline-primary">
+                                    <i class="bi bi-collection me-1"></i>View All Collections
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -136,12 +231,49 @@
                 <div class="col-md-6 mb-4">
                     <div class="card h-100">
                         <div class="card-body text-center">
-                            <i class="bi bi-star display-4 text-warning mb-3"></i>
-                            <h5>My Ratings</h5>
-                            <p class="card-text">See all the games you've rated and reviewed.</p>
-                            <a href="#" class="btn btn-outline-primary w-100">
-                                View Ratings
-                            </a>
+                            <i class="bi bi-journal-text display-4 text-info mb-3"></i>
+                            <h5>My Notes</h5>
+                            <p class="card-text">See your recent notes and ratings.</p>
+
+                            @if (Model.RecentNotes.Any())
+                            {
+                                <div class="mt-3 text-start">
+                                    <h6 class="border-bottom pb-2 mb-3">Recent Notes:</h6>
+                                    @foreach (var note in Model.RecentNotes.Take(3))
+                                    {
+                                        <div class="mb-3 pb-2 border-bottom">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <strong class="mb-1">@note.GameTitle</strong>
+                                                @if (note.PersonalRating.HasValue)
+                                                {
+                                                    <span class="badge bg-warning">@note.PersonalRating/10</span>
+                                                }
+                                            </div>
+                                            @if (!string.IsNullOrEmpty(note.PersonalNotes))
+                                            {
+                                                <p class="mb-0 small text-muted mt-1">
+                                                    @if (note.PersonalNotes.Length > 60)
+                                                    {
+                                                        @note.PersonalNotes.Substring(0, 60)
+                                                        <text>...</text>
+                                                    }
+                                                    else
+                                                    {
+                                                        @note.PersonalNotes
+                                                    }
+                                                </p>
+                                            }
+                                            <small class="text-muted d-block mt-1">
+                                                <i class="bi bi-folder me-1"></i>in @note.CollectionName
+                                            </small>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted mt-3">No notes or ratings yet.</p>
+                            }
                         </div>
                     </div>
                 </div>
@@ -154,4 +286,48 @@
     .avatar-circle {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
+
+    .collection-card-link:hover {
+        color: #0d6efd !important;
+        text-decoration: underline !important;
+    }
+
+    .note-preview {
+        background-color: #f8f9fa;
+        border-left: 3px solid #0dcaf0;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-style: italic;
+    }
+
+    .game-count-badge {
+        min-width: 2.5rem;
+        text-align: center;
+    }
 </style>
+
+@functions {
+    string GetBadgeBgClass(string badgeColor)
+    {
+        return badgeColor switch
+        {
+            "primary" => "bg-primary bg-opacity-10",
+            "success" => "bg-success bg-opacity-10",
+            "info" => "bg-info bg-opacity-10",
+            "warning" => "bg-warning bg-opacity-10",
+            _ => "bg-secondary bg-opacity-10"
+        };
+    }
+
+    string GetTextColorClass(string badgeColor)
+    {
+        return badgeColor switch
+        {
+            "primary" => "text-primary",
+            "success" => "text-success",
+            "info" => "text-info",
+            "warning" => "text-warning",
+            _ => "text-secondary"
+        };
+    }
+}

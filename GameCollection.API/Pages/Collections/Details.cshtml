@@ -71,6 +71,8 @@
                         </div>
                         <div class="card-body">
                             <form method="post" asp-page-handler="AddGame">
+                                <input type="hidden" name="SortBy" value="@Model.SortBy" />
+                                <input type="hidden" name="SortOrder" value="@Model.SortOrder" />
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <label class="form-label">Select Game</label>
@@ -111,6 +113,24 @@
                                         <span asp-validation-for="AddGameDto.PersonalNotes" class="text-danger small"></span>
                                     </div>
                                 </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input asp-for="AddGameDto.Completed" class="form-check-input" />
+                                            <label asp-for="AddGameDto.Completed" class="form-check-label">
+                                                <i class="bi bi-check-circle me-1"></i> Completed
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input asp-for="AddGameDto.CurrentlyPlaying" class="form-check-input" />
+                                            <label asp-for="AddGameDto.CurrentlyPlaying" class="form-check-label">
+                                                <i class="bi bi-controller me-1"></i> Currently Playing
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -130,10 +150,41 @@
                                 <i class="bi bi-sort-down"></i> Sort
                             </button>
                             <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="?sort=date">Date Added (Newest)</a></li>
-                                <li><a class="dropdown-item" href="?sort=date_old">Date Added (Oldest)</a></li>
-                                <li><a class="dropdown-item" href="?sort=title">Title (A-Z)</a></li>
-                                <li><a class="dropdown-item" href="?sort=rating">Rating (Highest)</a></li>
+                                @{
+                                    var currentSortBy = Model.SortBy;
+                                    var currentSortOrder = Model.SortOrder;
+                                }
+
+                                <li>
+                                    <a class="dropdown-item @(currentSortBy == "date" && currentSortOrder == "desc" ? "active" : "")"
+                                       href="?sortBy=date&sortOrder=desc">
+                                        Date Added (Newest)
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item @(currentSortBy == "date" && currentSortOrder == "asc" ? "active" : "")"
+                                       href="?sortBy=date&sortOrder=asc">
+                                        Date Added (Oldest)
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item @(currentSortBy == "title" ? "active" : "")"
+                                       href="?sortBy=title&sortOrder=asc">
+                                        Title (A-Z)
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item @(currentSortBy == "rating" && currentSortOrder == "desc" ? "active" : "")"
+                                       href="?sortBy=rating&sortOrder=desc">
+                                        Rating (Highest)
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item @(currentSortBy == "rating" && currentSortOrder == "asc" ? "active" : "")"
+                                       href="?sortBy=rating&sortOrder=asc">
+                                        Rating (Lowest)
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                     }
@@ -208,13 +259,14 @@
                                             </a>
                                             @if (Model.IsOwner)
                                             {
-                                                <form method="post" asp-page-handler="RemoveGame">
-                                                    <input type="hidden" name="gameId" value="@game.GameId" />
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                            onclick="return confirm('Remove this game from collection?')">
-                                                        <i class="bi bi-trash"></i> Remove
-                                                    </button>
-                                                </form>
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-danger remove-game-btn"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#removeGameModal"
+                                                        data-game-id="@game.GameId"
+                                                        data-game-title="@game.GameTitle">
+                                                    <i class="bi bi-trash"></i> Remove
+                                                </button>
                                             }
                                         </div>
                                     </div>
@@ -225,58 +277,6 @@
                 }
             </div>
         </div>
-
-        <!-- Recommendations -->
-        @if (Model.RecommendedGames.Any())
-        {
-            <div class="row mt-5">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-header">
-                            <h5 class="mb-0">
-                                <i class="bi bi-lightbulb text-warning me-2"></i>
-                                Recommended Games Based on This Collection
-                            </h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                @foreach (var game in Model.RecommendedGames)
-                                {
-                                    <div class="col-md-4 col-lg-2 mb-3">
-                                        <div class="card h-100">
-                                            <div class="card-body">
-                                                <h6 class="card-title">@game.Title</h6>
-                                                <p class="card-text small text-muted">
-                                                    @game.ReleaseYear
-                                                    @if (game.MetacriticScore.HasValue)
-                                                    {
-                                                        <span class="badge bg-secondary ms-1">@game.MetacriticScore</span>
-                                                    }
-                                                </p>
-                                                <div class="d-flex gap-1">
-                                                    <a href="/Games/Details/@game.Id" class="btn btn-sm btn-outline-primary flex-grow-1">
-                                                        View
-                                                    </a>
-                                                    @if (Model.IsOwner)
-                                                    {
-                                                        <form method="post" asp-page-handler="AddGame">
-                                                            <input type="hidden" asp-for="AddGameDto.GameId" value="@game.Id" />
-                                                            <button type="submit" class="btn btn-sm btn-outline-success" title="Add to collection">
-                                                                <i class="bi bi-plus"></i>
-                                                            </button>
-                                                        </form>
-                                                    }
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        }
 
         <!-- Statistics -->
         @if (Model.Collection.Games != null && Model.Collection.Games.Any())
@@ -370,6 +370,33 @@
         </div>
     </div>
 
+    <!-- Remove Game From Collection -->
+    <div class="modal fade" id="removeGameModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove Game from Collection</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-exclamation-triangle text-danger fs-1 mb-3"></i>
+                <p class="mb-1" id="removeGameMessage">Are you sure you want to remove this game from the collection?</p>
+                <small class="text-muted">This will remove all associated notes and ratings.</small>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" asp-page-handler="RemoveGame" id="removeGameForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="gameId" id="removeGameId" value="" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Yes, Remove
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
     <!-- Export Modal -->
     <div class="modal fade" id="exportModal" tabindex="-1">
         <div class="modal-dialog">
@@ -406,6 +433,63 @@ else
     </div>
 }
 
+@functions {
+    // Βοηθητική μέθοδος για να κρατάμε τα υπάρχοντα query parameters
+    string GetQueryStringWithoutSort()
+    {
+        var query = HttpContext.Request.Query;
+        var parameters = new Dictionary<string, string>();
+
+        foreach (var key in query.Keys)
+        {
+            if (key != "sort" && key != "order" && key != "__RequestVerificationToken")
+            {
+                parameters[key] = query[key];
+            }
+        }
+
+        return string.Join("&", parameters.Select(p => $"{p.Key}={p.Value}"));
+    }
+}
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle remove game buttons
+            const removeGameButtons = document.querySelectorAll('.remove-game-btn');
+            const removeGameForm = document.getElementById('removeGameForm');
+            const removeGameIdInput = document.getElementById('removeGameId');
+            const removeGameMessage = document.getElementById('removeGameMessage');
+
+            removeGameButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const gameId = this.getAttribute('data-game-id');
+                    const gameTitle = this.getAttribute('data-game-title');
+
+                    // Set the form values
+                    removeGameIdInput.value = gameId;
+
+                    // Update the confirmation message
+                    removeGameMessage.innerHTML =
+                        `Are you sure you want to remove "<strong>${gameTitle}</strong>" from the collection "<strong>@Model.Collection.Name</strong>"?`;
+                });
+            });
+
+            // Also handle the small "Remove" buttons in recommendations
+            const recommendRemoveButtons = document.querySelectorAll('form[asp-page-handler="RemoveGame"]');
+            recommendRemoveButtons.forEach(form => {
+                const button = form.querySelector('button[type="submit"]');
+                if (button) {
+                    button.addEventListener('click', function(e) {
+                        const gameId = form.querySelector('input[name="gameId"]').value;
+                        if (!confirm('Are you sure you want to remove this game from the collection?')) {
+                            e.preventDefault();
+                        }
+                    });
+                }
+            });
+        });
+    </script>
 }

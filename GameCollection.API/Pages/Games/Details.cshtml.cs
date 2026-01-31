@@ -80,7 +80,11 @@ namespace GameCollection.API.Pages.Games
         {
             if (!_currentUser.IsAuthenticated)
             {
-                return RedirectToPage("/Account/Login", new { returnUrl = $"/Games/Details/{gameId}" });
+                return RedirectToPage("/Account/Login", new
+                {
+                    returnUrl = $"/Games/Details/{gameId}",
+                    errorMessage = "Please login to perform this action"
+                });
             }
 
             try
@@ -123,8 +127,11 @@ namespace GameCollection.API.Pages.Games
         {
             if (!_currentUser.IsAuthenticated)
             {
-                TempData["ErrorMessage"] = "Please login to modify collections";
-                return RedirectToPage("/Account/Login", new { returnUrl = $"/Games/Details/{gameId}" });
+                return RedirectToPage("/Account/Login", new
+                {
+                    returnUrl = $"/Games/Details/{gameId}",
+                    errorMessage = "Please login to modify collections"
+                });
             }
 
             try
@@ -186,8 +193,11 @@ namespace GameCollection.API.Pages.Games
         {
             if (!_currentUser.IsAuthenticated)
             {
-                TempData["ErrorMessage"] = "Please login to update notes";
-                return RedirectToPage("/Account/Login", new { returnUrl = $"/Games/Details/{gameId}" });
+                return RedirectToPage("/Account/Login", new
+                {
+                    returnUrl = $"/Games/Details/{gameId}",
+                    errorMessage = "Please login to update notes"
+                });
             }
 
             try
@@ -227,8 +237,11 @@ namespace GameCollection.API.Pages.Games
         {
             if (!_currentUser.IsAuthenticated)
             {
-                TempData["ErrorMessage"] = "Please login with an admin role to delete game.";
-                return RedirectToPage("/Account/Login", new { returnUrl = $"/Games/Details/{id}" });
+                return RedirectToPage("/Account/Login", new
+                {
+                    returnUrl = $"/Games/Details/{id}",
+                    errorMessage = "Please login with an admin role to delete game."
+                });
             }
 
             if (_currentUser.IsInRole("Admin"))
@@ -257,7 +270,7 @@ namespace GameCollection.API.Pages.Games
             else
             {
                 TempData["ErrorMessage"] = "Please login with an admin role to delete game.";
-                return RedirectToPage(new { id});
+                return RedirectToPage(new { id });
             }
         }
     }

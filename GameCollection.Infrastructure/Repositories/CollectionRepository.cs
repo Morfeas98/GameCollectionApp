@@ -84,11 +84,36 @@ namespace GameCollection.Infrastructure.Repositories
 
             if (collectionGame != null)
             {
-                //collectionGame.IsDeleted = true;
-                //collectionGame.UpdatedAt = DateTime.UtcNow;
-                //_context.CollectionGames.Update(collectionGame);
-
                 _context.CollectionGames.Remove(collectionGame);
+            }
+        }
+
+        public async Task<bool> DeleteCollectionAsync(int collectionId, int userId)
+        {
+            var collection = await _context.GameCollections
+                .Include(c => c.CollectionGames) 
+                .FirstOrDefaultAsync(c => c.Id == collectionId && c.UserId == userId);
+
+            if (collection == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                foreach (var collectionGame in collection.CollectionGames.ToList())
+                {
+                    _context.CollectionGames.Remove(collectionGame);
+                }
+
+                _context.GameCollections.Remove(collection);
+
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
             }
         }
 
@@ -215,6 +240,33 @@ namespace GameCollection.Infrastructure.Repositories
                 .AnyAsync(cg =>
                     cg.Collection.UserId == userId &&
                     cg.GameId == gameId);
+        }
+
+        public async Task<IEnumerable<CollectionGame>> GetRecentCollectionGamesByUserAsync(int userId, int limit)
+        {
+            return await _context.CollectionGames
+                .Include(cg => cg.Collection)
+                .Include(cg => cg.Game)
+                .Where(cg => cg.Collection.UserId == userId &&
+                            !cg.IsDeleted &&
+                            !cg.Collection.IsDeleted)
+                .OrderByDescending(cg => cg.CreatedAt)
+                .Take(limit)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<CollectionGame>> GetUserNotesAndRatingsAsync(int userId, int limit)
+        {
+            return await _context.CollectionGames
+                .Include(cg => cg.Collection)
+                .Include(cg => cg.Game)
+                .Where(cg => cg.Collection.UserId == userId &&
+                            !cg.IsDeleted &&
+                            !cg.Collection.IsDeleted &&
+                            (cg.PersonalNotes != null || cg.PersonalRating != null))
+                .OrderByDescending(cg => cg.UpdatedAt ?? cg.CreatedAt)
+                .Take(limit)
+                .ToListAsync();
         }
     }
 }

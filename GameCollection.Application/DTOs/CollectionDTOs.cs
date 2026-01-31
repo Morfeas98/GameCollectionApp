@@ -62,4 +62,17 @@ namespace GameCollection.Application.DTOs
         public bool Completed { get; set; }
         public bool CurrentlyPlaying { get; set; }
     }
+
+    public class ActivityDto
+    {
+        public string Type { get; set; } = string.Empty; // "CollectionCreated", "GameAdded", "NoteAdded", "RatingAdded"
+        public string GameTitle { get; set; } = string.Empty;
+        public string CollectionName { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+        public string IconClass { get; set; } = string.Empty;
+        public string BadgeColor { get; set; } = string.Empty;
+        public int? Rating { get; set; }
+        public string? NotePreview { get; set; }
+    }
 }

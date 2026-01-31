@@ -6,6 +6,7 @@ using GameCollection.Application.Services;
 using GameCollection.Application.DTOs;
 using GameCollection.Infrastructure.Data;
 using GameCollection.Domain.Entities;
+using System.Collections.ObjectModel;
 
 namespace GameCollection.API.Pages.Collections
 {
@@ -19,10 +20,15 @@ namespace GameCollection.API.Pages.Collections
         public CollectionDto Collection { get; set; }
         public List<SelectListItem> AllGames { get; set; } = new();
         public bool IsOwner { get; set; }
-        public List<GameDto> RecommendedGames { get; set; } = new();
 
         [BindProperty]
         public AddGameToCollectionDto AddGameDto { get; set; } = new();
+
+        [BindProperty(SupportsGet = true)]
+        public string SortBy { get; set; } = "date";
+
+        [BindProperty(SupportsGet = true)]
+        public string SortOrder { get; set; } = "desc";
 
         public DetailsModel(
             AppDbContext context,
@@ -52,19 +58,20 @@ namespace GameCollection.API.Pages.Collections
                 return NotFound();
             }
 
-            var collectionEntity = await _context.GameCollections
-                .Include(c => c.CollectionGames)
-                    .ThenInclude(cg => cg.Game)
-                .FirstOrDefaultAsync(c => c.Id == id);
+            var collectionOwnerId = await _context.GameCollections
+                .Where(c => c.Id == id)
+                .Select(c => c.UserId)
+                .FirstOrDefaultAsync();
 
-            IsOwner = collectionEntity?.UserId == userId;
+            IsOwner = collectionOwnerId == userId;
+
+            if (Collection.Games != null && Collection.Games.Any())
+            {
+                Collection.Games = ApplySorting(Collection.Games, SortBy, SortOrder).ToList();
+            }
 
             await LoadAllGamesAsync();
-
-            await LoadRecommendationsAsync();
-
             return Page();
-
         }
 
         public async Task<IActionResult> OnPostAddGameAsync(int id)
@@ -93,7 +100,12 @@ namespace GameCollection.API.Pages.Collections
                 }
 
                 TempData["SuccessMessage"] = "Game added to collection successfully!";
-                return RedirectToPage(new { id });
+                return RedirectToPage(new
+                {
+                    id,
+                    sortBy = SortBy,
+                    sortOrder = SortOrder
+                });
             }
             catch (Exception ex)
             {
@@ -124,12 +136,22 @@ namespace GameCollection.API.Pages.Collections
                     TempData["SuccessMessage"] = "Game removed from collection successfully!";
                 }
 
-                return RedirectToPage(new { id });
+                return RedirectToPage(new
+                {
+                    id,
+                    sortBy = SortBy,
+                    sortOrder = SortOrder
+                });
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = ex.Message;
-                return RedirectToPage(new { id });
+                return RedirectToPage(new
+                {
+                    id,
+                    sortBy = SortBy,
+                    sortOrder = SortOrder
+                });
             }
         }
 
@@ -159,34 +181,50 @@ namespace GameCollection.API.Pages.Collections
             }
         }
 
-        private async Task LoadRecommendationsAsync()
-        {
-            if (Collection?.Games == null || !Collection.Games.Any())
-                return;
-
-            var allRecommendations = new List<GameDto>();
-
-            foreach (var game in Collection.Games.Take(3))
-            {
-                var recommendations = await _gameService.GetRecommendationsAsync(game.GameId);
-                allRecommendations.AddRange(recommendations);
-            }
-
-            var collectionGameIds = Collection.Games.Select(g => g.GameId).ToList();
-            RecommendedGames = allRecommendations
-                .Where(g => !collectionGameIds.Contains(g.Id))
-                .DistinctBy(g => g.Id)
-                .Take(6)
-                .ToList();
-        }
-
         private async Task ReloadPageDataAsync(int id)
         {
             var userId = _currentUser.GetRequiredUserId();
             Collection = await _collectionService.GetCollectionByIdAsync(id, userId);
 
+            if (Collection.Games != null && Collection.Games.Any())
+            {
+                Collection.Games = ApplySorting(Collection.Games, SortBy, SortOrder).ToList();
+            }
+
             await LoadAllGamesAsync();
-            await LoadRecommendationsAsync();
+        }
+
+        private IEnumerable<CollectionGameDto> ApplySorting(
+            IEnumerable<CollectionGameDto> games,
+            string sortBy,
+            string sortOrder)
+        {
+            if (string.IsNullOrEmpty(sortBy))
+                sortBy = "date";
+            if (string.IsNullOrEmpty(sortOrder))
+                sortOrder = "desc";
+
+            switch (sortBy.ToLower())
+            {
+                case "date":
+                    return sortOrder == "desc"
+                        ? games.OrderByDescending(g => g.DateAdded)
+                        : games.OrderBy(g => g.DateAdded);
+
+                case "date_old":
+                    return games.OrderBy(g => g.DateAdded);
+
+                case "title":
+                    return games.OrderBy(g => g.GameTitle);
+
+                case "rating":
+                    return sortOrder == "desc"
+                        ? games.OrderByDescending(g => g.PersonalRating ?? 0)
+                        : games.OrderBy(g => g.PersonalRating ?? 0);
+
+                default:
+                    return games.OrderByDescending(g => g.DateAdded);
+            }
         }
     }
 }

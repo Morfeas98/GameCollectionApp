@@ -27,5 +27,8 @@ namespace GameCollection.Domain.Repositories
         Task<CollectionGame?> GetUserGameAsync(int userId, int gameId);
         Task<IEnumerable<GameCollection.Domain.Entities.GameCollection>> GetCollectionsContainingGameAsync(int userId, int gameId);
         Task<bool> IsGameInUserCollectionAsync(int userId, int gameId);
+        Task<bool> DeleteCollectionAsync(int collectionId, int userId);
+        Task<IEnumerable<CollectionGame>> GetRecentCollectionGamesByUserAsync(int userId, int limit);
+        Task<IEnumerable<CollectionGame>> GetUserNotesAndRatingsAsync(int userId, int limit);
     }
 }

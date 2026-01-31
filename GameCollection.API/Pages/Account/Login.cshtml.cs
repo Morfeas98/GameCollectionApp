@@ -20,6 +20,12 @@ namespace GameCollection.API.Pages.Account
 
         public string? ReturnUrl { get; set; }
 
+        [TempData]
+        public string ErrorMessage { get; set; }
+
+        [FromQuery(Name = "errorMessage")]
+        public string QueryErrorMessage { get; set; }
+
         public LoginModel(IUserService userService)
         {
             _userService = userService;
@@ -28,14 +34,16 @@ namespace GameCollection.API.Pages.Account
         public void OnGet(string? returnUrl = null)
         {
             ReturnUrl = returnUrl;
+
+            if (!string.IsNullOrEmpty(QueryErrorMessage))
+            {
+                ErrorMessage = QueryErrorMessage;
+            }
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            if (!ModelState.IsValid)
-            {
-                return Page();
-            }
+            ReturnUrl = returnUrl;
 
             try
             {
@@ -70,21 +78,25 @@ namespace GameCollection.API.Pages.Account
                 // Store token in session for API calls
                 HttpContext.Session.SetString("JWT_Token", authResponse.Token);
 
+                TempData["SuccessMessage"] = "Login successful! Welcome back.";
+
                 // Redirect
                 if (!string.IsNullOrEmpty(ReturnUrl) && Url.IsLocalUrl(ReturnUrl))
                 {
-                    return Redirect(ReturnUrl);
+                    return LocalRedirect(ReturnUrl);
                 }
 
                 return RedirectToPage("/Index");
             }
             catch (UnauthorizedAccessException ex)
             {
+                ErrorMessage = ex.Message;
                 ModelState.AddModelError(string.Empty, ex.Message);
                 return Page();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
+                ErrorMessage = "An error occurred during login. Please try again.";
                 ModelState.AddModelError(string.Empty, "An error occurred during login. Please try again.");
                 return Page();
             }

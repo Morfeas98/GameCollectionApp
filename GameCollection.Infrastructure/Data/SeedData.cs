@@ -13,9 +13,9 @@ namespace GameCollection.Infrastructure.Data
             // Checks if DB is Created
             context.Database.EnsureCreated();
 
-            //// Returns if Already Populated
-            //if (context.Platforms.Any())
-            //    return;
+            // Returns if Already Populated
+            if (context.Platforms.Any())
+                return;
 
             // Add Platforms (Εμπλουτισμός με 15+ πλατφόρμες)
             var platforms = new[]
@@ -691,6 +691,29 @@ namespace GameCollection.Infrastructure.Data
                     MetacriticScore = 96,
                     MetacriticUrl = "https://www.metacritic.com/game/baldurs-gate-3/",
                     Description = "Dungeons & Dragons RPG"
+                },
+                new Game
+                {
+                    Title = "Resident Evil Requiem",
+                    ReleaseYear = 2026,
+                    Developer = "Capcom",
+                    Publisher = "Capcom",
+                    ImageUrl = "https://images.igdb.com/igdb/image/upload/t_cover_big/cob3bo.webp",
+                    MetacriticScore = 95,
+                    MetacriticUrl = "https://www.metacritic.com/game/resident-evil-requiem/",
+                    FranchiseId = residentEvilFranchise.Id,
+                    Description = "Resident Evil Requiem is the ninth entry in the Resident Evil series"
+                },
+                new Game
+                {
+                    Title = "Nioh 3",
+                    ReleaseYear = 2026,
+                    Developer = "Team NINJA",
+                    Publisher = "Koei Temco Games",
+                    ImageUrl = "https://images.igdb.com/igdb/image/upload/t_cover_big/co9x1e.webp",
+                    MetacriticScore = 99,
+                    MetacriticUrl = "https://www.metacritic.com/game/nioh-3/",
+                    Description = "In the latest game in the dark samurai action RPG series \"Nioh,\" you will need to use both Samurai and Ninja combat styles in your battles against formidable yokai as you explore a thrilling open world"
                 }
             };
 
@@ -739,6 +762,7 @@ namespace GameCollection.Infrastructure.Data
             var ghostOfTsushima = context.Games.First(g => g.Title == "Ghost of Tsushima");
             var spiderman = context.Games.First(g => g.Title == "Spider-Man: Miles Morales");
             var demonsSouls = context.Games.First(g => g.Title == "Demon's Souls (2020)");
+            var reRequiem = context.Games.First(g => g.Title == "Resident Evil Requiem");
 
             var gamePlatforms = new List<GamePlatform>
             {
@@ -887,7 +911,11 @@ namespace GameCollection.Infrastructure.Data
                 new GamePlatform { GameId = ghostOfTsushima.Id, PlatformId = ps4Platform.Id },
                 new GamePlatform { GameId = spiderman.Id, PlatformId = ps5Platform.Id },
                 new GamePlatform { GameId = spiderman.Id, PlatformId = ps4Platform.Id },
-                new GamePlatform { GameId = demonsSouls.Id, PlatformId = ps5Platform.Id }
+                new GamePlatform { GameId = demonsSouls.Id, PlatformId = ps5Platform.Id },
+
+                // RE Requiem
+                new GamePlatform { GameId = reRequiem.Id, PlatformId = pcPlatform.Id },
+                new GamePlatform { GameId = reRequiem.Id, PlatformId = ps5Platform.Id },
             };
 
             context.GamePlatforms.AddRange(gamePlatforms);
@@ -960,6 +988,11 @@ namespace GameCollection.Infrastructure.Data
                 new GameGenre { GameId = re2.Id, GenreId = horrorGenre.Id },
                 new GameGenre { GameId = re2.Id, GenreId = actionGenre.Id },
                 new GameGenre { GameId = re2.Id, GenreId = survivalGenre.Id },
+
+                // Resident Evil Requiem
+                new GameGenre { GameId = reRequiem.Id, GenreId = horrorGenre.Id },
+                new GameGenre { GameId = reRequiem.Id, GenreId = actionGenre.Id },
+                new GameGenre { GameId = reRequiem.Id, GenreId = survivalGenre.Id },
                 
                 // Super Mario Odyssey
                 new GameGenre { GameId = marioOdyssey.Id, GenreId = platformerGenre.Id },

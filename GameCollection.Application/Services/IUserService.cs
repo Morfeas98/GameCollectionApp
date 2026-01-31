@@ -13,6 +13,11 @@ namespace GameCollection.Application.Services
         Task<AuthResponseDto> LoginAsync(LoginDto loginDto);
         Task<UserProfileDto> GetUserProfileAsync(int userId);
         Task<UserStatsDto> GetUserStatsAsync(int userId);
+        Task<UserProfileDto> UpdateUserProfileAsync(int userId, UserProfileUpdateDto updateDto);
+        Task<bool> ChangePasswordAsync(int userId, ChangePasswordDto changePasswordDto);
+        Task<List<ActivityDto>> GetRecentActivitiesAsync(int userId, int limit = 5);
+        Task<List<CollectionGameDto>> GetRecentNotesAsync(int userId, int limit = 5);
+
     }
 
     public class UserProfileDto

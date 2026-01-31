@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AutoMapper;
+﻿using AutoMapper;
 using GameCollection.Application.DTOs;
 using GameCollection.Domain.Entities;
 using GameCollection.Domain.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace GameCollection.Application.Services
 {
@@ -83,22 +84,6 @@ namespace GameCollection.Application.Services
             await _collectionRepository.SaveChangesAsync();
 
             return _mapper.Map<CollectionDto>(collection);
-        }
-
-        public async Task<bool> DeleteCollectionAsync(int collectionId, int userId)
-        {
-            // Verify Ownership
-            if (!await _collectionRepository.CollectionBelongsToUserAsync(collectionId, userId))
-                return false;
-
-            var collection = await _collectionRepository.GetByIdAsync(collectionId);
-            if (collection == null)
-                return false;
-
-            await _collectionRepository.DeleteAsync(collection);
-            await _collectionRepository.SaveChangesAsync();
-
-            return true;
         }
 
         public async Task<bool> AddGameToCollectionAsync(int collectionId, AddGameToCollectionDto addGameDto, int userId)
@@ -201,6 +186,18 @@ namespace GameCollection.Application.Services
 
             var collectionGame = await _collectionRepository.GetCollectionGameAsync(collectionId, gameId);
             return collectionGame != null ? _mapper.Map<CollectionGameDto>(collectionGame) : null;
+        }
+
+        public async Task<bool> DeleteCollectionAsync(int collectionId, int userId)
+        {
+            // Verify Ownership
+            if (!await _collectionRepository.CollectionBelongsToUserAsync(collectionId, userId))
+                return false;
+
+            await _collectionRepository.DeleteCollectionAsync(collectionId, userId);
+            await _collectionRepository.SaveChangesAsync();
+
+            return true;
         }
     }
 }

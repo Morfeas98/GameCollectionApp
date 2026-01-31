@@ -554,7 +554,7 @@
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                @foreach (var recommendation in Model.Recommendations.Take(3))
+                                @foreach (var recommendation in Model.Recommendations.Take(6))
                                 {
                                     <div class="col-md-4 mb-3">
                                         <div class="card h-100 hover-shadow">
@@ -573,14 +573,6 @@
                                     </div>
                                 }
                             </div>
-                            @if (Model.Recommendations.Count() > 3)
-                            {
-                                <div class="text-center mt-3">
-                                    <a href="#" class="btn btn-sm btn-outline-primary">
-                                        View All Recommendations
-                                    </a>
-                                </div>
-                            }
                         </div>
                     </div>
                 }

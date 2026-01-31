@@ -4,7 +4,7 @@
 
 @{
     ViewData["Title"] = "Login";
-    Layout = "_AuthLayout"; // Θα δημιουργήσουμε ειδικό layout για authentication pages
+    Layout = "_AuthLayout";
 }
 
 <div class="auth-page">
@@ -12,6 +12,14 @@
         <div class="row justify-content-center">
             <div class="col-md-6 col-lg-5">
                 <div class="card shadow">
+                    <!-- Display Error Messages -->
+                    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                    {
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="bi bi-exclamation-triangle me-2"></i> @Model.ErrorMessage
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    }
                     <div class="card-header bg-primary text-white text-center py-3">
                         <h4 class="mb-0">
                             <i class="bi bi-controller me-2"></i>
