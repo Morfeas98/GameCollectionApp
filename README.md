@@ -57,12 +57,14 @@ GameCollection is a full-featured web application for managing your video game c
 
 ---
 
+## 🔧 Installation Guide
+
 ### Prerequisites
 - .NET 9.0 SDK
 - SQL Server 2019+ or SQL Server Express 
 - Visual Studio 2022 or VS Code 
 
-## 🔧 Installation Guide
+### Installation
 ```bash
 # Clone the repository
 git clone https://github.com/Morfeas98/GameCollectionApp
