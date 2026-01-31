@@ -88,7 +88,7 @@ dotnet run
 
 ```
 
-`https://localhost:5113` in your browser!
+`http://localhost:5113` in your browser!
 
 ---
 
