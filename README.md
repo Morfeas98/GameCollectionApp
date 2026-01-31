@@ -68,26 +68,22 @@ GameCollection is a full-featured web application for managing your video game c
 ```bash
 # Clone the repository
 git clone https://github.com/Morfeas98/GameCollectionApp
+
 cd GameCollectionApp
 
 # Restore dependencies
 dotnet restore
 
-# Go to Infrastructure directory
-cd GameCollection.Infrastructure
-
-# Install ef tool (or Update if needed)
+# Install/Update EF Tools globally
 dotnet tool install --global dotnet-ef
 dotnet tool update --global dotnet-ef
 
-# Update Database
+# Database Setup
+cd GameCollection.Infrastructure
 dotnet ef database update -s ../GameCollection.API
 
-# Go to API directory 
-cd ../
-cd GameCollection.API
-
 # Run the application
+cd ../GameCollection.API
 dotnet run
 
 ```
