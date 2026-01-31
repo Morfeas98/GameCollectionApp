@@ -190,24 +190,33 @@ namespace GameCollection.API.Pages.Games
                 return Unauthorized();
             }
 
-            try
+            if (_currentUser.IsInRole("Admin"))
             {
-                var result = await _gameService.DeleteGameAsync(id);
-
-                if (!result)
+                try
                 {
-                    return NotFound();
-                }
+                    var result = await _gameService.DeleteGameAsync(id);
 
-                TempData["SuccessMessage"] = $"Game {GameForm.Title} has been deleted successfully";
-                return RedirectToPage("Index");
+                    if (result)
+                    {
+                        TempData["SuccessMessage"] = "Game deleted successfully!";
+                        return RedirectToPage("/Games/Index");
+                    }
+                    else
+                    {
+                        TempData["ErrorMessage"] = "Failed to delete game.";
+                        return RedirectToPage(new { id });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    TempData["ErrorMessage"] = $"Error: {ex.Message}";
+                    return RedirectToPage(new { id });
+                }
             }
-            catch (Exception)
+            else
             {
-                ModelState.AddModelError(string.Empty, "An error occurred while deleting the game.");
-                await LoadDropdownsAsync();
-                MarkSelectedItems();
-                return Page();
+                TempData["ErrorMessage"] = "Please login with an admin role to delete game.";
+                return RedirectToPage(new { id });
             }
         }
     }
