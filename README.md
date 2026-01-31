@@ -132,7 +132,28 @@ Update the connection string in `appsettings.json`:
 dotnet restore
 
 # Apply database migrations
-dotnet ef database update --project GameCollection.Infrastructure
+# Πήγαινε στο Infrastructure project (όπου είναι το DbContext)
+cd GameCollection.Infrastructure
+# Δημιουργία Initial Migration
+dotnet ef migrations add InitialCreate -s ../GameCollection.API
+
+# Εναλλακτικά, αν θέλεις να καθορίσεις το DbContext:
+dotnet ef migrations add InitialCreate --context AppDbContext -s ../GameCollection.API --project
+
+# Εφαρμογή της migration (δημιουργία βάσης)
+dotnet ef database update -s ../GameCollection.API
+
+# Εναλλακτικά, με παραμέτρους:
+dotnet ef database update --context AppDbContext -s ../GameCollection.API --project
+
+# Εκτέλεση της εφαρμογής
+cd GameCollection.API
+dotnet run
+
+# ή τρέξε από το solution root:
+dotnet run --project GameCollection.API
+
+
 ```
 
 ---
