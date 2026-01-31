@@ -15,8 +15,8 @@ A professional video game collection management system built with **ASP.NET Core
 - [Installation Guide](#-installation-guide)
 - [Architecture](#%EF%B8%8F-architecture)
 - [Project Structure](#-project-structure)
-- [Auth](#-authentication--authorization)
-- [API]()
+- [Authentication & Authorization](#-authentication--authorization)
+- [API Endpoints](#%EF%B8%8F-api-endpoints)
 
 ---
 
