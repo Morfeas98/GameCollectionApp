@@ -13,8 +13,8 @@ A professional video game collection management system built with **ASP.NET Core
 - [Overview](#-overview)
 - [Features](#-features)
 - [Installation Guide](#-installation-guide)
+- [Architecture](#-architecture)
 - [Project Structure](#-project-structure)
-
 
 ---
 
