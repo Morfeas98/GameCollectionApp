@@ -57,7 +57,8 @@ namespace GameCollection.Application.Services
                 Username = createdUser.Username,
                 Email = createdUser.Email,
                 Token = token,
-                TokenExpiration = DateTime.UtcNow.AddDays(7)
+                TokenExpiration = DateTime.UtcNow.AddDays(7),
+                Role = user.Role
             };
         }
 
@@ -81,7 +82,8 @@ namespace GameCollection.Application.Services
                 Username = user.Username,
                 Email = user.Email,
                 Token = token,
-                TokenExpiration = DateTime.UtcNow.AddDays(7)
+                TokenExpiration = DateTime.UtcNow.AddDays(7),
+                Role = user.Role
             };
         }
 

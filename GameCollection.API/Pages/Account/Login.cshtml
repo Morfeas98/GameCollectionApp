@@ -60,7 +60,14 @@
                                     <input asp-for="LoginDto.Password"
                                            type="password"
                                            class="form-control"
+                                           id="loginPassword"
                                            placeholder="Password" />
+                                    <button class="btn btn-outline-secondary"
+                                            type="button"
+                                            id="toggleLoginPassword"
+                                            aria-label="Show/hide password">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
                                 </div>
                                 <span asp-validation-for="LoginDto.Password" class="text-danger small"></span>
                             </div>
@@ -164,4 +171,34 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Toggle password visibility function
+        function togglePasswordVisibility(fieldId, button) {
+            const field = document.getElementById(fieldId);
+            const icon = button.querySelector('i');
+
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+                button.setAttribute('aria-label', 'Hide password');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+                button.setAttribute('aria-label', 'Show password');
+            }
+        }
+
+        // Attach event listener for login page
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleLoginPasswordBtn = document.getElementById('toggleLoginPassword');
+            if (toggleLoginPasswordBtn) {
+                toggleLoginPasswordBtn.addEventListener('click', function() {
+                    togglePasswordVisibility('loginPassword', this);
+                });
+            }
+        });
+    </script>
 }

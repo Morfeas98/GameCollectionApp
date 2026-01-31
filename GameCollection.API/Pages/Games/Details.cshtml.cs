@@ -3,6 +3,7 @@ using GameCollection.Application.Services;
 using GameCollection.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Security.Claims;
 
 namespace GameCollection.API.Pages.Games
 {
@@ -235,12 +236,16 @@ namespace GameCollection.API.Pages.Games
 
         public async Task<IActionResult> OnPostDeleteAsync(int id)
         {
+            Console.WriteLine($"User: {User.Identity.Name}");
+            Console.WriteLine($"Is Admin: {User.IsInRole("Admin")}");
+            Console.WriteLine($"Roles: {string.Join(", ", User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value))}");
+
             if (!_currentUser.IsAuthenticated)
             {
                 return RedirectToPage("/Account/Login", new
                 {
                     returnUrl = $"/Games/Details/{id}",
-                    errorMessage = "Please login with an admin role to delete game."
+                    errorMessage = "Only Admins can delete games"
                 });
             }
 

@@ -70,7 +70,14 @@
                                         <input asp-for="RegisterDto.Password"
                                                type="password"
                                                class="form-control"
+                                               id="registerPassword"
                                                placeholder="Create a password" />
+                                        <button class="btn btn-outline-secondary"
+                                                type="button"
+                                                id="toggleRegisterPassword"
+                                                aria-label="Show/hide password">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
                                     </div>
                                     <span asp-validation-for="RegisterDto.Password" class="text-danger small"></span>
                                     <div class="form-text">Minimum 6 characters</div>
@@ -87,6 +94,12 @@
                                                id="ConfirmPassword"
                                                class="form-control"
                                                placeholder="Confirm your password" />
+                                        <button class="btn btn-outline-secondary"
+                                                type="button"
+                                                id="toggleConfirmPassword"
+                                                aria-label="Show/hide password">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
                                     </div>
                                     <div id="passwordMatchError" class="text-danger small" style="display: none;">
                                         Passwords do not match
@@ -202,11 +215,45 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
+        // Toggle password visibility function
+        function togglePasswordVisibility(fieldId, button) {
+            const field = document.getElementById(fieldId);
+            const icon = button.querySelector('i');
+
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.classList.remove('bi-eye');
+                icon.classList.add('bi-eye-slash');
+                button.setAttribute('aria-label', 'Hide password');
+            } else {
+                field.type = 'password';
+                icon.classList.remove('bi-eye-slash');
+                icon.classList.add('bi-eye');
+                button.setAttribute('aria-label', 'Show password');
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-            const passwordInput = document.getElementById('RegisterDto_Password');
+            const passwordInput = document.getElementById('registerPassword');
             const confirmPasswordInput = document.getElementById('ConfirmPassword');
             const passwordMatchError = document.getElementById('passwordMatchError');
 
+            // Attach toggle events for password fields
+            const toggleRegisterPasswordBtn = document.getElementById('toggleRegisterPassword');
+            if (toggleRegisterPasswordBtn) {
+                toggleRegisterPasswordBtn.addEventListener('click', function() {
+                    togglePasswordVisibility('registerPassword', this);
+                });
+            }
+
+            const toggleConfirmPasswordBtn = document.getElementById('toggleConfirmPassword');
+            if (toggleConfirmPasswordBtn) {
+                toggleConfirmPasswordBtn.addEventListener('click', function() {
+                    togglePasswordVisibility('ConfirmPassword', this);
+                });
+            }
+
+            // Original password match validation (keep existing)
             function validatePasswordMatch() {
                 if (passwordInput.value !== confirmPasswordInput.value) {
                     passwordMatchError.style.display = 'block';

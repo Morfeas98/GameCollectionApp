@@ -56,6 +56,7 @@ namespace GameCollection.API.Pages.Account
                     new Claim(ClaimTypes.NameIdentifier, authResponse.UserId.ToString()),
                     new Claim(ClaimTypes.Name, authResponse.Username),
                     new Claim(ClaimTypes.Email, authResponse.Email),
+                    new Claim(ClaimTypes.Role, authResponse.Role),
                     new Claim("Token", authResponse.Token) // Store token in claim
                 };
 
