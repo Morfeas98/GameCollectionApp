@@ -1,6 +1,6 @@
 # 🎮 GameCollection App
 
-[cite_start]A professional video game collection management system built with **ASP.NET Core Razor Pages**. [cite: 1]
+A professional video game collection management system built with **ASP.NET Core Razor Pages**.
 
 ![.NET 9.0](https://img.shields.io/badge/.NET-9.0-512BD4?logo=dotnet)
 ![ASP.NET Core](https://img.shields.io/badge/ASP.NET_Core-9.0-512BD4?logo=dotnet)
@@ -12,15 +12,15 @@
 
 - [Overview](#-overview)
 - [Features](#-features)
-- [Quick Start](#-quick-start)
-- [Project Structure](#-project-structure)
 - [Installation Guide](#-installation-guide)
+- [Project Structure](#-project-structure)
+
 
 ---
 
 ## 🎯 Overview
 
-GameCollection is a full-featured web application for managing your video game collection. [cite: 1] [cite_start]It allows you to track games you own, want to play, or have completed, organize them into custom collections, add personal ratings and notes, and discover new games through intelligent recommendations.
+GameCollection is a full-featured web application for managing your video game collection. It allows you to track games you own, want to play, or have completed, organize them into custom collections, add personal ratings and notes, and discover new games through intelligent recommendations.
 
 ### Why GameCollection?
 
@@ -55,29 +55,40 @@ GameCollection is a full-featured web application for managing your video game c
 
 ---
 
-## 🚀 Quick Start
-
 ### Prerequisites
 - .NET 9.0 SDK
 - SQL Server 2019+ or SQL Server Express 
 - Visual Studio 2022 or VS Code 
 
-### One-Command Setup
+## 🔧 Installation Guide
 ```bash
 # Clone the repository
-git clone [https://github.com/Morfeas98/GameCollectionApp.git](https://github.com/Morfeas98/GameCollectionApp.git)
+git clone https://github.com/Morfeas98/GameCollectionApp
 cd GameCollectionApp
 
 # Restore dependencies
 dotnet restore
 
-# Run database migrations (Ensure connection string is set in appsettings.json)
-dotnet ef database update
+# Go to Infrastructure directory
+cd GameCollection.Infrastructure
+
+# Install ef tool (or Update if needed)
+dotnet tool install --global dotnet-ef
+dotnet tool update --global dotnet-ef
+
+# Update Database
+dotnet ef database update -s ../GameCollection.API
+
+# Go to API directory 
+cd ../
+cd GameCollection.API
 
 # Run the application
 dotnet run
+
 ```
-`https://localhost:5001` in your browser!
+
+`https://localhost:5113` in your browser!
 
 ---
 
@@ -102,61 +113,14 @@ dotnet run
 ## 📁 Project Structure
 ```text
 GameCollectionApp/
-[cite_start]├── GameCollection.API/                 # Main Web Application [cite: 7]
-[cite_start]│   ├── Pages/                          # Razor Pages [cite: 8]
-[cite_start]│   ├── Controllers/                    # API Controllers [cite: 9]
-[cite_start]│   └── Program.cs                      # Application startup [cite: 10]
-[cite_start]├── GameCollection.Application/         # Application Layer (Services & DTOs) [cite: 10, 11]
-[cite_start]├── GameCollection.Domain/              # Domain Layer (Entities & Repository Interfaces) [cite: 11, 12]
-[cite_start]└── GameCollection.Infrastructure/      # Infrastructure Layer (DbContext & Migrations) [cite: 12, 13]
+├── GameCollection.API/                 # Main Web Application 
+│   ├── Pages/                          # Razor Pages 
+│   ├── Controllers/                    # API Controllers 
+│   └── Program.cs                      # Application startup 
+├── GameCollection.Application/         # Application Layer (Services & DTOs) 
+├── GameCollection.Domain/              # Domain Layer (Entities & Repository Interfaces)
+└── GameCollection.Infrastructure/      # Infrastructure Layer (DbContext & Migrations) 
 ```
-
----
-
-## 🔧 Installation Guide
-
-### Step 1: Database Setup
-Update the connection string in `appsettings.json`:
-
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=GameCollectionDB;Trusted_Connection=True;MultipleActiveResultSets=true"
-  }
-}
-```
-
-### Step 2: Application Configuration
-```bash
-# Restore NuGet packages
-dotnet restore
-
-# Apply database migrations
-# Πήγαινε στο Infrastructure project (όπου είναι το DbContext)
-cd GameCollection.Infrastructure
-# Δημιουργία Initial Migration
-dotnet ef migrations add InitialCreate -s ../GameCollection.API
-
-# Εναλλακτικά, αν θέλεις να καθορίσεις το DbContext:
-dotnet ef migrations add InitialCreate --context AppDbContext -s ../GameCollection.API --project
-
-# Εφαρμογή της migration (δημιουργία βάσης)
-dotnet ef database update -s ../GameCollection.API
-
-# Εναλλακτικά, με παραμέτρους:
-dotnet ef database update --context AppDbContext -s ../GameCollection.API --project
-
-# Εκτέλεση της εφαρμογής
-cd GameCollection.API
-dotnet run
-
-# ή τρέξε από το solution root:
-dotnet run --project GameCollection.API
-
-
-```
-
----
 
 ## 🔐 Authentication & Authorization
 - **Security**: BCrypt password hashing, secure cookie-based sessions, and CSRF protection 
@@ -172,16 +136,8 @@ The application includes a RESTful API for AJAX operations:
 
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
-| **GET** | `/api/games` | [cite_start]Get all games [cite: 19] |
-| **GET** | `/api/games/{id}` | [cite_start]Get specific game [cite: 20] |
-| **POST** | `/api/collections` | [cite_start]Create collection [cite: 21] |
-| **DELETE** | `/api/collections/{id}/games/{gameId}` | [cite_start]Remove game from collection [cite: 22] |
+| **GET** | `/api/games` | Get all games |
+| **GET** | `/api/games/{id}` | Get specific game |
+| **POST** | `/api/collections` | Create collection |
+| **DELETE** | `/api/collections/{id}/games/{gameId}` | Remove game from collection |
 
----
-
-## 📄 License
-This project is licensed under the **MIT License**.  
-
----
-**Built with ❤️ by [Morfeas98]**
-**Last Updated: January 2024**
