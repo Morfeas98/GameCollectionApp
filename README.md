@@ -77,7 +77,7 @@ dotnet restore
 ## Troubleshooting NuGet Sources
 # If you get an error that packages (like AutoMapper) cannot be found, 
 # you may need to add the official NuGet feed to your local configuration and then use dotnet restore again.
-dotnet nuget add source [https://api.nuget.org/v3/index.json](https://api.nuget.org/v3/index.json) -n nuget.org
+dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org
 
 # Install/Update EF Tools globally
 dotnet tool install --global dotnet-ef
